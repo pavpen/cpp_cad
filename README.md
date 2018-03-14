@@ -5,7 +5,7 @@ implementations of tesselations of a couple of basic primitives
 (sphere, cone / cylinder), and basic helper functions.
 
 Most of the functionality comes from the
-[https://www.cgal.org/](CGAL library), such as:
+[CGAL library](https://www.cgal.org/), such as:
 
 * Constructive solid geometry binary operations (difference, union).
 * Convex hulls.
