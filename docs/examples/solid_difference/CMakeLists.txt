@@ -1,7 +1,7 @@
 # Created by the script cgal_create_CMakeLists
 # This is the CMake script for compiling a set of CGAL applications.
 
-project( 07-output_difference )
+project( solid_difference )
 
 
 cmake_minimum_required(VERSION 2.8.11)
@@ -12,7 +12,7 @@ find_package( CGAL QUIET COMPONENTS core )
 if ( NOT CGAL_FOUND )
 
   message(STATUS "This project requires the CGAL library, and will not be compiled.")
-  return()  
+  return()
 
 endif()
 
@@ -31,6 +31,9 @@ if ( NOT Boost_FOUND )
 
 endif()
 
+# C++ CAD library:
+find_package( CppCad REQUIRED )
+
 # include for local directory
 
 # include for local package
@@ -43,5 +46,4 @@ SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++17" )
 include( CGAL_CreateSingleSourceCGALProgram )
 
 
-create_single_source_cgal_program( "output_difference.cpp" )
-
+create_single_source_cgal_program( "solid_difference.cpp" )
