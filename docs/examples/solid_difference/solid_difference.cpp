@@ -31,7 +31,7 @@
 
 #include "config.h"
 
-#include "cpp_cad/Nef_polyhedron_3.h"
+#include <cpp_cad.h>
 
 
 

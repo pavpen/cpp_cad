@@ -41,7 +41,7 @@ find_package( CppCad REQUIRED )
 
 # Creating entries for all C++ files with "main" routine
 # ##########################################################
-SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++17" )
+SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++11" )
 
 include( CGAL_CreateSingleSourceCGALProgram )
 

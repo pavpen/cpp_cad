@@ -1,0 +1,16 @@
+# - Config file for the CppCad package
+# It defines the following variables
+#  CPPCAD_INCLUDE_DIRS - include directories for CppCad
+#  CPPCAD_LIBRARIES    - libraries to link against
+ 
+# Compute paths
+get_filename_component(CPPCAD_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(CPPCAD_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT CppCad_BINARY_DIR)
+  include("${CPPCAD_CMAKE_DIR}/CppCadTargets.cmake")
+endif()
+ 
+# These are IMPORTED targets created by CppCadTargets.cmake
+set(CPPCAD_LIBRARIES cppcad CGAL)
