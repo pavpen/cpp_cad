@@ -13,6 +13,8 @@
 namespace cpp_cad_log
 {
 
+#ifdef OPERATION_LOG
+
 template <class HDS>
 void log_cylinder_tessalation_builder_vertices(
     double base_r, double top_r, double height,
@@ -61,6 +63,17 @@ void log_cylinder_tessalation_builder_vertices(
 
     log_polyhedron_builder_vertices(builder, vertex_count, extra_code_buf.str());
 }
+
+#else // OPERATION_LOG
+
+template <class HDS>
+inline void log_cylinder_tessalation_builder_vertices(
+    double base_r, double top_r, double height,
+    CGAL::Polyhedron_incremental_builder_3<HDS> &builder, int vertex_count,
+    std::string extra_code = "")
+{}
+
+#endif // OPERATION_LOG
 
 }
 

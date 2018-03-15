@@ -14,6 +14,8 @@
 namespace cpp_cad_log
 {
 
+#ifdef OPERATION_LOG
+
 template <class HDS>
 void log_sphere_tessalation_builder_vertices(
     double circumsphere_r, double latitude_step, double max_latitude,
@@ -60,6 +62,17 @@ void log_sphere_tessalation_builder_vertices(
 
     log_polyhedron_builder_vertices(builder, vertex_count, extra_code_buf.str());
 }
+
+#else // OPERATION_LOG
+
+template <class HDS>
+inline void log_sphere_tessalation_builder_vertices(
+    double circumsphere_r, double latitude_step, double max_latitude,
+    CGAL::Polyhedron_incremental_builder_3<HDS> &builder, int vertex_count,
+    std::string extra_code = "")
+{}
+
+#endif // OPERATION_LOG
 
 }
 
