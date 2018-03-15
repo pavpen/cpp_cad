@@ -1,11 +1,3 @@
-// A "Hello, world" and tutorial sample.
-//
-// "1 Three Points and One Segment" from
-// https://doc.cgal.org/latest/Manual/tutorial_hello_world.html
-//
-// "1 Output Operator" from
-// https://doc.cgal.org/latest/Stream_support/index.html
-//
 // # To Build:
 //
 // ## Create a CMakeLists:
@@ -14,6 +6,8 @@
 //
 // * Add `SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++11" )` to
 // `CMakeLists.txt`.
+//
+// * Add `find_package( CppCad REQUIRED )` to `CMakeLists.txt`.
 //
 // ## Create a Makefile:
 //
@@ -27,7 +21,7 @@
 //
 // # Run:
 //
-// ./output_sphere
+// ./solid_difference
 
 #include "config.h"
 
