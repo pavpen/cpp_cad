@@ -4,9 +4,11 @@
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Polyhedron_incremental_builder_3.h>
 
-#include "reference_frame.h"
+#include "../reference_frame.h"
+#include "../Polygon_2.h"
 #include "Cube_3_Modifier.h"
 #include "Cylinder_3_TessalationModifier.h"
+#include "PolygonExtrusionModifier.h"
 #include "Sphere_3_TessalationModifier.h"
 
 
@@ -78,6 +80,14 @@ namespace cpp_cad
                 tessalator(*this, circumsphere_r, linear_subdivision_c);
 
             this->delegate(tessalator);
+        }
+
+        void add_linear_extrusion(const Polygon_2 &polygon, Kernel::FT height)
+        {
+            PolygonExtrusionModifier<Polyhedron_3::HalfedgeDS>
+                modifier(*this, polygon, height);
+
+            this->delegate(modifier);
         }
     };
 }

@@ -64,17 +64,17 @@ private:
         OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
 
         // Add vertices:
-        OPERATION_LOG_MESSAGE("Adding top square.");
-        add_end_square(z_length);
-        OPERATION_LOG_MESSAGE("Adding base square.");
-        add_end_square(0);
+        OPERATION_LOG_MESSAGE("Adding top square vertices.");
+        add_end_square_vertices(z_length);
+        OPERATION_LOG_MESSAGE("Adding base square vertices.");
+        add_end_square_vertices(0);
 
         add_faces();
 
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
-    inline void add_end_square(Kernel::FT z)
+    inline void add_end_square_vertices(Kernel::FT z)
     {
         OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
 

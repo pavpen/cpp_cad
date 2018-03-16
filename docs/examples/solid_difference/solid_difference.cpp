@@ -29,7 +29,6 @@
 
 
 typedef cpp_cad::Nef_polyhedron_3 Nef_polyhedron_3;
-typedef cpp_cad::Polyhedron_3 Polyhedron_3;
 
 
 // Outputs the difference between a cube and a sphere as an OBJ file:

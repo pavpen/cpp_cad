@@ -1,7 +1,7 @@
 #ifndef _CPP_CAD_SPHERE_3_TESSALATION_MODIFIER_H
 #define _CPP_CAD_SPHERE_3_TESSALATION_MODIFIER_H
 
-#include "reference_frame.h"
+#include "../reference_frame.h"
 #include "Sphere_3_TessalationBuilder.h"
 
 namespace cpp_cad

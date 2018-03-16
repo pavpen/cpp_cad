@@ -1,7 +1,7 @@
 #ifndef _CPP_CAD_CUBE_3_MODIFIER_H
 #define _CPP_CAD_CUBE_3_MODIFIER_H
 
-#include "reference_frame.h"
+#include "../reference_frame.h"
 #include "Cube_3_Builder.h"
 
 namespace cpp_cad

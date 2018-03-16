@@ -8,7 +8,7 @@
 
 
 #include "reference_frame.h"
-#include "Polyhedron_3.h"
+#include "Polyhedron_3/Polyhedron_3.h"
 
 
 namespace cpp_cad

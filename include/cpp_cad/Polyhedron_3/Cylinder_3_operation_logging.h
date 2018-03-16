@@ -7,7 +7,7 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Shape_detection_3/Shape_base.h>
 
-#include "reference_frame.h"
+#include "../reference_frame.h"
 #include "Polyhedron_3_operation_logging.h"
 
 namespace cpp_cad_log
