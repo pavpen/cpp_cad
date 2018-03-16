@@ -13,7 +13,7 @@ using cpp_cad::Point_2;
 using cpp_cad::transform;
 
 
-// Outputs the difference between a cube and a sphere as an OBJ file:
+// Outputs two triangle extrusions above each other:
 int main()
 {
     // Construct a triangle:
