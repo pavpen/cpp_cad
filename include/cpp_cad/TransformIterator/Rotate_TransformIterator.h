@@ -12,10 +12,10 @@ namespace cpp_cad
     {
         private:
 
-        int subdivision_c;
         double angle;
         double angle_step;
         int subdivision_i;
+        int subdivision_i_end;
 
         public:
 
@@ -23,18 +23,19 @@ namespace cpp_cad
 
         RotateTransformIterator(
             double start_angle = 0, double end_angle = 2 * M_PI,
-            int subdivision_c = 16, int subdivision_i = 0)
-        : subdivision_c(subdivision_c),
-            angle(start_angle),
+            int subdivision_c = 16, int subdivision_i = 0,
+            int subdivision_i_end = -1)
+        : angle(start_angle),
             angle_step((end_angle - start_angle) / subdivision_c),
-            subdivision_i(subdivision_i)
+            subdivision_i(subdivision_i),
+            subdivision_i_end(subdivision_i_end >= 0 ? subdivision_i_end : subdivision_c)
         {}
 
         RotateTransformIterator(const RotateTransformIterator &source)
-        : subdivision_c(source.subdivision_c),
-            angle(source.angle),
+        : angle(source.angle),
             angle_step(source.angle_step),
-            subdivision_i(source.subdivision_i)
+            subdivision_i(source.subdivision_i),
+            subdivision_i_end(source.subdivision_i_end)
         {}
 
         RotateTransformIterator &operator++()
@@ -86,7 +87,7 @@ namespace cpp_cad
 
         int steps_left() const
         {
-            return subdivision_c - subdivision_i;
+            return subdivision_i_end - subdivision_i;
         }
     };
 

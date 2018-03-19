@@ -98,8 +98,8 @@ namespace cpp_cad
             int subdivision_c = 16, double eps = 1e-15)
         {
             Polygon_2 xz_polygon = transform(Aff_transformation_3::swap_yz(), polygon);
-            bool closed = abs(angle) < 2 * M_PI - eps;
-            TransformIterator::ZRotation trajectory(0, angle, subdivision_c);
+            bool closed = abs(2 * M_PI - abs(angle)) < eps;
+            TransformIterator::ZRotation trajectory(0, angle, subdivision_c, closed);
 
             add_polygon_extrusion(
                 xz_polygon, trajectory.begin(), trajectory.end(), closed);

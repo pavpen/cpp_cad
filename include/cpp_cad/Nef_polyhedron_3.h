@@ -50,8 +50,10 @@ namespace cpp_cad
             return Nef_polyhedron_3(p);
         }
 
-        Nef_polyhedron_3(CGAL::Polyhedron_3<Kernel> &p)
-            : CGAL::Nef_polyhedron_3<Kernel>(p)
+        using CGAL::Nef_polyhedron_3<Kernel>::Nef_polyhedron_3;
+
+        Nef_polyhedron_3(CGAL::Nef_polyhedron_3<Kernel>::Content space=EMPTY)
+            : CGAL::Nef_polyhedron_3<Kernel>(space)
         {}
 
         Nef_polyhedron_3(CGAL::Nef_polyhedron_3<Kernel> &p)
@@ -62,9 +64,32 @@ namespace cpp_cad
             : CGAL::Nef_polyhedron_3<Kernel>(p)
         {}
 
-        void translate(Kernel::FT x, Kernel::FT y, Kernel::FT z)
+        Nef_polyhedron_3 &transform(
+            cpp_cad::Aff_transformation_3 transformation)
         {
-            transform(cpp_cad::Aff_transformation_3::translate(x, y, z));
+            CGAL::Nef_polyhedron_3<Kernel>::transform(transformation);
+
+            return *this;
+        }
+
+        Nef_polyhedron_3 &translate(Kernel::FT x, Kernel::FT y, Kernel::FT z)
+        {
+            return transform(cpp_cad::Aff_transformation_3::translate(x, y, z));
+        }
+
+        Nef_polyhedron_3 &rotate_x(double angle)
+        {
+            return transform(cpp_cad::Aff_transformation_3::rotate_x(angle));
+        }
+
+        Nef_polyhedron_3 &rotate_y(double angle)
+        {
+            return transform(cpp_cad::Aff_transformation_3::rotate_y(angle));
+        }
+
+        Nef_polyhedron_3 &rotate_z(double angle)
+        {
+            return transform(cpp_cad::Aff_transformation_3::rotate_z(angle));
         }
 
         void write_to_obj_file(std::string path)
