@@ -32,13 +32,16 @@ void operation_log_init(operation_log::DefaultOperationLog &log)
     // function returns:
     static MessageFilter message_filter;
 
+    log.set_message_filter_predicate(message_filter);
+
+    // Output an HTML log:
     static std::ofstream output_stream("operation-log.html");
     static operation_log::HtmlFormatter formatter(output_stream, "output_sphere");
 
+    // Enable Three.js in the HTML log:
     formatter.extra_header_code =
         operation_log::HtmlFormatter::three_js_header_code;
 
-    log.set_message_filter_predicate(message_filter);
     log.set_formatter(formatter);
 }
 

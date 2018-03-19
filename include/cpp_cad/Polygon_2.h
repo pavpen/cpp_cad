@@ -53,6 +53,8 @@ namespace cpp_cad
         }
 
         Nef_polyhedron_3 linear_extrude(Kernel::FT height);
+
+        Nef_polyhedron_3 rotate_extrude(double angle = 2 * M_PI, int subdivision_c = 16);
     };
 
 }

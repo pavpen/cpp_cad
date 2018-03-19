@@ -8,6 +8,9 @@
 #include <operation_log.h>
 
 #include "../Polygon_2.h"
+#include "../reference_frame.h"
+
+#include "PolygonExtrusion_operation_logging.h"
 
 
 
@@ -15,13 +18,21 @@ namespace cpp_cad
 {
 
 // A class that extrudes a polygon in the xy plane into a 3D polyhedron.
-template <class HDS>
+template <class HDS, class TransformInputIterator>
 class PolygonExtrusionBuilder : public CGAL::Modifier_base<HDS>
 {
 private:
-    Kernel::FT height;
+    bool closed;
     const Polygon_2 &polygon;
-    int vertex_count;
+    TransformInputIterator &trajectory_start;
+    const TransformInputIterator &trajectory_end;
+    OPERATION_LOG_CODE(
+        int vertex_count;
+        int face_count;
+    )
+    int polygon_vertex_count;
+    int prev_slice_vertex_index;
+    int slice_vertex_index;
     CGAL::Polyhedron_3<Kernel> polyhedron;
     CGAL::Polyhedron_incremental_builder_3<HDS> builder;
 
@@ -29,10 +40,17 @@ public:
     inline PolygonExtrusionBuilder(
         CGAL::Polyhedron_3<Kernel> &polyhedron, HDS& hds,
         const Polygon_2 &polygon,
-        Kernel::FT height = 1)
+        TransformInputIterator &trajectory_start,
+        const TransformInputIterator &trajectory_end,
+        bool closed = false)
     : polygon(polygon),
-        height(height),
-        vertex_count(0),
+        trajectory_start(trajectory_start),
+        trajectory_end(trajectory_end),
+        closed(closed),
+        OPERATION_LOG_CODE(
+            vertex_count(0),
+            face_count(0),
+        )
         polyhedron(polyhedron),
         CGAL::Modifier_base<HDS>(),
         builder(hds, true)
@@ -45,12 +63,27 @@ public:
 
     void run()
     {
-        int base_vertex_count = polygon.size();
-        int vertex_count = 2 * base_vertex_count;
-        int face_count = 2 + base_vertex_count;
+        polygon_vertex_count = polygon.size();
+        int slice_count = trajectory_start.steps_left();
+        int vertex_count = slice_count * polygon_vertex_count;
+        int side_face_count;
+        int end_face_count;
+        if (closed)
+        {
+            side_face_count = (slice_count - 1) * polygon_vertex_count;
+            end_face_count = 2;
+        }
+        else
+        {
+            side_face_count = slice_count * polygon_vertex_count;
+            end_face_count = 0;
+        }
+        int face_count = side_face_count + end_face_count;
 
-        // Each face has 4 halfedges.
-        int halfedge_count = 4 * face_count;
+        // Each side face has 4 halfedges, each end face has
+        // polygon_vertex_count halfedges.
+        int halfedge_count =
+                4 * side_face_count + polygon_vertex_count * end_face_count;
 
         builder.begin_surface(vertex_count, face_count, halfedge_count);
         add_tessalation();
@@ -62,28 +95,48 @@ private:
     {
         OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
 
-        // Add vertices:
-        OPERATION_LOG_MESSAGE("Adding top face vertices.");
-        add_end_face_vertices(height);
-        OPERATION_LOG_MESSAGE("Adding base face vertices.");
-        add_base_vertices();
+        TransformInputIterator &it = trajectory_start;
 
-        add_top_face();
-        add_side_faces();
-        add_base_face();
+        OPERATION_LOG_DUMP_VARS(closed, polygon_vertex_count);
+
+        // Add vertices:
+        OPERATION_LOG_MESSAGE("Adding first slice vertices.");
+        add_slice_vertices(transform(*it, polygon));
+
+        prev_slice_vertex_index = 0;
+
+        if (!closed)
+        {
+            slice_vertex_index = 0;
+            add_start_face();
+        }
+
+        slice_vertex_index = polygon_vertex_count;
+        for (++it; it != trajectory_end; ++it)
+        {
+            add_slice_vertices(transform(*it, polygon));
+            add_side_faces();
+        }
+
+        if (closed)
+        {
+            add_closing_side_faces();
+        }
+        else
+        {
+            add_end_face();
+        }
 
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
-    inline void add_base_vertices()
+    inline void add_slice_vertices(const Polygon_2 &slice)
     {
-        OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
+        OPERATION_LOG_ENTER_FUNCTION(slice);
 
         typename Polygon_2::Vertex_const_iterator vit;
 
-        for (vit = polygon.vertices_begin();
-            vit != polygon.vertices_end();
-            ++vit)
+        for (vit = slice.vertices_begin(); vit != slice.vertices_end(); ++vit)
         {
             add_vertex(*vit);
         }
@@ -91,39 +144,61 @@ private:
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
-    inline void add_end_face_vertices(Kernel::FT z)
+    inline void add_start_face()
     {
         OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
 
-        typename Polygon_2::Vertex_const_iterator vit;
+        int last_vertex_index = slice_vertex_index;
 
-        for (vit = polygon.vertices_begin();
-            vit != polygon.vertices_end();
-            ++vit)
+        builder.begin_facet();
+
+        OPERATION_LOG_MESSAGE_STREAM_OPEN(vertex_msg);
+        OPERATION_LOG_MESSAGE_STREAM_WRITE(vertex_msg, << "Face " << face_count << ":");
+
+        for (int vertex_index = slice_vertex_index + polygon_vertex_count - 1;
+            vertex_index >= last_vertex_index;
+            --vertex_index)
         {
-            add_vertex(vit->x(), vit->y(), vit->z() + z);
+            OPERATION_LOG_MESSAGE_STREAM_WRITE(vertex_msg, << " " << vertex_index);
+            builder.add_vertex_to_facet(vertex_index);
         }
 
+        OPERATION_LOG_MESSAGE_STREAM_CLOSE(vertex_msg);
+
+        builder.end_facet();
+
+        OPERATION_LOG_CODE(
+            ++face_count;
+        )
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
-    inline void add_top_face()
+    inline void add_end_face()
     {
         OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
 
-        typename Polygon_2::Vertex_const_iterator vit;
-
-        int vertex_index = 0;
-
         builder.begin_facet();
-        for (vit = polygon.vertices_begin();
-            vit != polygon.vertices_end();
-            ++vit, ++vertex_index)
+
+        int last_vertex_index = slice_vertex_index - 1;
+
+        OPERATION_LOG_MESSAGE_STREAM_OPEN(vertex_msg);
+        OPERATION_LOG_MESSAGE_STREAM_WRITE(vertex_msg, << "Face " << face_count << ":");
+
+        for (int vertex_index = prev_slice_vertex_index;
+            vertex_index <= last_vertex_index;
+            ++vertex_index)
         {
+            OPERATION_LOG_MESSAGE_STREAM_WRITE(vertex_msg, << " " << vertex_index);
             builder.add_vertex_to_facet(vertex_index);
         }
+
+        OPERATION_LOG_MESSAGE_STREAM_CLOSE(vertex_msg);
+
         builder.end_facet();
 
+        OPERATION_LOG_CODE(
+            ++face_count;
+        )
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
@@ -131,89 +206,81 @@ private:
     {
         OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
 
-        typename Polygon_2::Vertex_const_iterator vit;
+        OPERATION_LOG_DUMP_VARS(slice_vertex_index, prev_slice_vertex_index, polygon_vertex_count);
 
-        int top_vertex_index = 0;
-        int base_vertex_index = polygon.size();
-        int last_top_vertex_index = polygon.size() - 1;
-        int last_base_vertex_index = 2 * polygon.size() - 1;
+        int slice_last_vertex_index = slice_vertex_index + polygon_vertex_count - 1;
 
-        for (vit = polygon.vertices_begin();
-            vit != polygon.vertices_end();
-            ++vit)
+        while (slice_vertex_index < slice_last_vertex_index)
         {
-            int next_base_vertex_index = base_vertex_index + 1;
+            int slice_next_vertex_index = slice_vertex_index + 1;
+            int prev_slice_next_vertex_index = prev_slice_vertex_index + 1;
 
-            if (next_base_vertex_index > last_base_vertex_index)
-            {
-                next_base_vertex_index -= polygon.size();
-            }
-
-            int next_top_vertex_index = top_vertex_index + 1;
-
-            if (next_top_vertex_index > last_top_vertex_index)
-            {
-                next_top_vertex_index -= polygon.size();
-            }
+            OPERATION_LOG_MESSAGE_STREAM(<< "Face " << face_count << ": " <<
+                slice_vertex_index << " " << 
+                prev_slice_vertex_index << " " <<
+                prev_slice_next_vertex_index << " " <<
+                slice_next_vertex_index);
 
             builder.begin_facet();
-            builder.add_vertex_to_facet(top_vertex_index);
-            builder.add_vertex_to_facet(base_vertex_index);
-            builder.add_vertex_to_facet(next_base_vertex_index);
-            builder.add_vertex_to_facet(next_top_vertex_index);
+            builder.add_vertex_to_facet(slice_vertex_index);
+            builder.add_vertex_to_facet(prev_slice_vertex_index);
+            builder.add_vertex_to_facet(prev_slice_next_vertex_index);
+            builder.add_vertex_to_facet(slice_next_vertex_index);
             builder.end_facet();
 
-            base_vertex_index = next_base_vertex_index;
-            top_vertex_index = next_top_vertex_index;
+            OPERATION_LOG_CODE(
+                ++face_count;
+            )
+
+            slice_vertex_index = slice_next_vertex_index;
+            prev_slice_vertex_index = prev_slice_next_vertex_index;
         }
 
+        // Add the last face:
+        OPERATION_LOG_MESSAGE_STREAM(<< "Last face " << face_count << ": " <<
+            slice_vertex_index << " " << 
+            prev_slice_vertex_index << " " <<
+            (prev_slice_vertex_index + 1 - polygon_vertex_count) << " " <<
+            (slice_vertex_index + 1 - polygon_vertex_count));
+
+        builder.begin_facet();
+        builder.add_vertex_to_facet(slice_vertex_index);
+        builder.add_vertex_to_facet(prev_slice_vertex_index);
+        builder.add_vertex_to_facet(prev_slice_vertex_index + 1 - polygon_vertex_count);
+        builder.add_vertex_to_facet(slice_vertex_index + 1 - polygon_vertex_count);
+        builder.end_facet();
+
+        ++slice_vertex_index;
+        ++prev_slice_vertex_index;
+
+        OPERATION_LOG_CODE(
+            ++face_count;
+        )
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
-    inline void add_base_face()
+    inline void add_closing_side_faces()
     {
         OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
 
-        typename Polygon_2::Vertex_const_iterator vit;
-
-        int vertex_index = 2 * polygon.size() - 1;
-
-        builder.begin_facet();
-        for (vit = polygon.vertices_begin();
-            vit != polygon.vertices_end();
-            ++vit, --vertex_index)
-        {
-            builder.add_vertex_to_facet(vertex_index);
-        }
-        builder.end_facet();
+        slice_vertex_index = 0;
+        add_side_faces();
 
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
     inline void add_vertex(const Point_3 &point)
     {
-        OPERATION_LOG_ENTER_FUNCTION(std::to_string(point));
+        OPERATION_LOG_ENTER_FUNCTION(point);
 
         OPERATION_LOG_MESSAGE_STREAM(<<
             "Vertex " << vertex_count << ": " << point);
 
         builder.add_vertex(point);
-        vertex_count++;
-
-        OPERATION_LOG_LEAVE_FUNCTION();
-    }
-
-    inline void add_vertex(Kernel::FT x, Kernel::FT y, Kernel::FT z)
-    {
-        OPERATION_LOG_ENTER_FUNCTION(CGAL::to_double(x), CGAL::to_double(y), CGAL::to_double(z));
-
-        Kernel::Point_3 point(x, y, z);
-
-        OPERATION_LOG_MESSAGE_STREAM(<<
-            "Vertex " << vertex_count << ": " << point);
-
-        builder.add_vertex(point);
-        vertex_count++;
+        OPERATION_LOG_CODE(
+            vertex_count++;
+            cpp_cad_log::log_polygon_extrusion_builder_vertices(polygon_vertex_count, builder, vertex_count);
+        )
 
         OPERATION_LOG_LEAVE_FUNCTION();
     }

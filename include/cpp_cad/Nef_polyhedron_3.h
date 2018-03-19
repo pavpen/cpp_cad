@@ -3,10 +3,11 @@
 
 #include <fstream>
 
+#include <CGAL/Aff_transformation_3.h>
 #include <CGAL/IO/print_wavefront.h>
 #include <CGAL/Nef_polyhedron_3.h>
 
-
+#include "Aff_transformation_3.h"
 #include "reference_frame.h"
 #include "Polyhedron_3/Polyhedron_3.h"
 
@@ -60,6 +61,11 @@ namespace cpp_cad
         Nef_polyhedron_3(CGAL::Nef_polyhedron_3<Kernel> p)
             : CGAL::Nef_polyhedron_3<Kernel>(p)
         {}
+
+        void translate(Kernel::FT x, Kernel::FT y, Kernel::FT z)
+        {
+            transform(cpp_cad::Aff_transformation_3::translate(x, y, z));
+        }
 
         void write_to_obj_file(std::string path)
         {

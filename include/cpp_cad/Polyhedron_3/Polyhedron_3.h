@@ -4,10 +4,13 @@
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Polyhedron_incremental_builder_3.h>
 
+#include "../Aff_transformation_3.h"
 #include "../reference_frame.h"
 #include "../Polygon_2.h"
+#include "../TransformIterator/TransformIterator.h"
 #include "Cube_3_Modifier.h"
 #include "Cylinder_3_TessalationModifier.h"
+#include "LinearExtrusionModifier.h"
 #include "PolygonExtrusionModifier.h"
 #include "Sphere_3_TessalationModifier.h"
 
@@ -36,7 +39,7 @@ namespace cpp_cad
             Coordinate sph_center_to_face_center = t4_h - circumsphere_r;
 
             Polyhedron_3::Halfedge_handle h =
-                this->make_tetrahedron(
+                make_tetrahedron(
                     Point_3(
                         -t4_edge / 2.0,
                         t4_face_center_to_edge,
@@ -61,7 +64,7 @@ namespace cpp_cad
             Cube_3_Modifier<Polyhedron_3::HalfedgeDS>
                 modifier(*this, x_length, y_length, z_length);
 
-            this->delegate(modifier);
+            delegate(modifier);
         }
 
         void add_cylindrical_tessalation(
@@ -71,7 +74,7 @@ namespace cpp_cad
             Cylinder_3_TessalationModifier<Polyhedron_3::HalfedgeDS>
                 tessalator(*this, base_r, top_r, height, linear_subdivision_c);
 
-            this->delegate(tessalator);
+            delegate(tessalator);
         }
 
         void add_spherical_tessalation(Coordinate circumsphere_r = 1, int linear_subdivision_c = 2)
@@ -79,15 +82,38 @@ namespace cpp_cad
             Sphere_3_TessalationModifier<Polyhedron_3::HalfedgeDS>
                 tessalator(*this, circumsphere_r, linear_subdivision_c);
 
-            this->delegate(tessalator);
+            delegate(tessalator);
         }
 
         void add_linear_extrusion(const Polygon_2 &polygon, Kernel::FT height)
         {
-            PolygonExtrusionModifier<Polyhedron_3::HalfedgeDS>
+            LinearExtrusionModifier<Polyhedron_3::HalfedgeDS>
                 modifier(*this, polygon, height);
 
-            this->delegate(modifier);
+            delegate(modifier);
+        }
+
+        void add_rotate_extrusion(
+            const Polygon_2 &polygon, double angle = 2 * M_PI,
+            int subdivision_c = 16, double eps = 1e-15)
+        {
+            Polygon_2 xz_polygon = transform(Aff_transformation_3::swap_yz(), polygon);
+            bool closed = abs(angle) < 2 * M_PI - eps;
+            TransformIterator::ZRotation trajectory(0, angle, subdivision_c);
+
+            add_polygon_extrusion(
+                xz_polygon, trajectory.begin(), trajectory.end(), closed);
+        }
+
+        template<typename TransformInputIterator>
+        void add_polygon_extrusion(
+            const Polygon_2 &polygon, TransformInputIterator trajectory_start,
+            const TransformInputIterator &trajectory_end, bool closed = false)
+        {
+            PolygonExtrusionModifier<Polyhedron_3::HalfedgeDS, TransformInputIterator>
+                modifier(*this, polygon, trajectory_start, trajectory_end, closed);
+
+            delegate(modifier);
         }
     };
 }
