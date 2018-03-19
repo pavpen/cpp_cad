@@ -6,6 +6,7 @@
 #include <cassert>
 #include <operation_log.h>
 
+#include "Polyhedron_3_BuilderBase.h"
 #include "Cylinder_3_operation_logging.h"
 
 
@@ -15,16 +16,16 @@ namespace cpp_cad
 // A class that uses a polyhedron incremental builer to build the faces of a
 // cylinder tessalation.
 template <class HDS>
-class Cylinder_3_TessalationBuilder : public CGAL::Modifier_base<HDS>
+class Cylinder_3_TessalationBuilder : public Polyhedron_3_BuilderBase<HDS>
 {
+protected:
+    using Polyhedron_3_BuilderBase<HDS>::builder;
+
 private:
     Kernel::FT base_r;
     Kernel::FT top_r;
     Kernel::FT height;
     int linear_subdivisions;
-    CGAL::Polyhedron_3<Kernel> polyhedron;
-    int vertex_count;
-    CGAL::Polyhedron_incremental_builder_3<HDS> builder;
     double top_longitude;
     double top_longitude_step;
     double base_longitude;
@@ -52,15 +53,7 @@ public:
         top_r(top_r),
         height(height),
         linear_subdivisions(linear_subdivisions),
-        polyhedron(polyhedron),
-        vertex_count(0),
-        CGAL::Modifier_base<HDS>(),
-        builder(hds, true)
-    {}
-
-    // Required when deriving from CGAL::Modifier_base<HDS> to make this class
-    // not abstract:
-    void operator()(HDS& hds)
+        Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
     {}
 
     void run()
@@ -80,6 +73,9 @@ public:
         add_tessalation();
         builder.end_surface();
     }
+
+protected:
+    using Polyhedron_3_BuilderBase<HDS>::add_face;
 
 private:
     void add_tessalation()
@@ -286,21 +282,6 @@ private:
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
-    // Adds a triangular face to the polyhedron.
-    //     The vertices must have already been added.
-    inline void add_face(int v0_index, int v1_index, int v2_index)
-    {
-        OPERATION_LOG_ENTER_FUNCTION(v0_index, v1_index, v2_index);
-
-        builder.begin_facet();
-        builder.add_vertex_to_facet(v0_index);
-        builder.add_vertex_to_facet(v1_index);
-        builder.add_vertex_to_facet(v2_index);
-        builder.end_facet();
-
-        OPERATION_LOG_LEAVE_FUNCTION();
-    }
-
     inline void add_vertex(double r, double longitude, double z)
     {
         OPERATION_LOG_ENTER_FUNCTION(r, longitude / M_PI, z);
@@ -311,11 +292,14 @@ private:
             "Vertex " << vertex_count << ": " << point);
 
         builder.add_vertex(point);
-        vertex_count++;
 
-        cpp_cad_log::log_cylinder_tessalation_builder_vertices(
-            CGAL::to_double(base_r), CGAL::to_double(top_r),
-            CGAL::to_double(height), builder, vertex_count);
+        OPERATION_LOG_CODE(
+            vertex_count++;
+
+            cpp_cad_log::log_cylinder_tessalation_builder_vertices(
+                CGAL::to_double(base_r), CGAL::to_double(top_r),
+                CGAL::to_double(height), builder, vertex_count);
+        )
 
         OPERATION_LOG_LEAVE_FUNCTION();
     }

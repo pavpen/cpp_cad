@@ -6,6 +6,7 @@
 #include <cassert>
 #include <operation_log.h>
 
+#include "Polyhedron_3_BuilderBase.h"
 #include "Sphere_3_operation_logging.h"
 
 
@@ -15,14 +16,14 @@ namespace cpp_cad
 // A class that uses a polyhedron incremental builer to build the faces of a
 // sphere tessalation.
 template <class HDS>
-class Sphere_3_TessalationBuilder : public CGAL::Modifier_base<HDS>
+class Sphere_3_TessalationBuilder : public Polyhedron_3_BuilderBase<HDS>
 {
+protected:
+    using Polyhedron_3_BuilderBase<HDS>::builder;
+
 private:
     double circumsphere_r;
     int linear_subdivisions;
-    CGAL::Polyhedron_3<Kernel> polyhedron;
-    int vertex_count;
-    CGAL::Polyhedron_incremental_builder_3<HDS> builder;
     double latitude;
     double latitude_step;
     double longitude;
@@ -48,15 +49,7 @@ public:
     inline Sphere_3_TessalationBuilder(CGAL::Polyhedron_3<Kernel> &polyhedron, HDS& hds, Kernel::FT circumsphere_r = 1, int linear_subdivisions = 2)
     : circumsphere_r(CGAL::to_double(circumsphere_r)),
         linear_subdivisions(linear_subdivisions),
-        polyhedron(polyhedron),
-        vertex_count(0),
-        CGAL::Modifier_base<HDS>(),
-        builder(hds, true)
-    {}
-
-    // Required when deriving from CGAL::Modifier_base<HDS> to make this class
-    // not abstract:
-    void operator()(HDS& hds)
+        Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
     {}
 
     void run()
@@ -105,6 +98,9 @@ public:
         add_tessalation();
         builder.end_surface();
     }
+
+protected:
+    using Polyhedron_3_BuilderBase<HDS>::add_face;
 
 private:
     void add_tessalation()
@@ -418,21 +414,6 @@ private:
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
-    // Adds a triangular face to the polyhedron.
-    //     The vertices must have already been added.
-    inline void add_face(int v0_index, int v1_index, int v2_index)
-    {
-        OPERATION_LOG_ENTER_FUNCTION(v0_index, v1_index, v2_index);
-
-        builder.begin_facet();
-        builder.add_vertex_to_facet(v0_index);
-        builder.add_vertex_to_facet(v1_index);
-        builder.add_vertex_to_facet(v2_index);
-        builder.end_facet();
-
-        OPERATION_LOG_LEAVE_FUNCTION();
-    }
-
     inline void add_vertex(double latitude, double longitude)
     {
         OPERATION_LOG_ENTER_FUNCTION(latitude / M_PI, longitude / M_PI);
@@ -449,10 +430,13 @@ private:
             "Vertex " << vertex_count << ": " << point);
 
         builder.add_vertex(point);
-        vertex_count++;
 
-        cpp_cad_log::log_sphere_tessalation_builder_vertices(
-            circumsphere_r, latitude_step, latitude, builder, vertex_count);
+        OPERATION_LOG_CODE(
+            vertex_count++;
+
+            cpp_cad_log::log_sphere_tessalation_builder_vertices(
+                circumsphere_r, latitude_step, latitude, builder, vertex_count);
+        )
 
         OPERATION_LOG_LEAVE_FUNCTION();
     }

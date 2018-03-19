@@ -9,6 +9,7 @@
 
 #include "../Polygon_2.h"
 #include "../reference_frame.h"
+#include "Polyhedron_3_BuilderBase.h"
 
 #include "PolygonExtrusion_operation_logging.h"
 
@@ -19,22 +20,19 @@ namespace cpp_cad
 
 // A class that extrudes a polygon in the xy plane into a 3D polyhedron.
 template <class HDS, class TransformInputIterator>
-class PolygonExtrusionBuilder : public CGAL::Modifier_base<HDS>
+class PolygonExtrusionBuilder : public Polyhedron_3_BuilderBase<HDS>
 {
+protected:
+    using Polyhedron_3_BuilderBase<HDS>::builder;
+
 private:
     bool closed;
     const Polygon_2 &polygon;
     TransformInputIterator &trajectory_start;
     const TransformInputIterator &trajectory_end;
-    OPERATION_LOG_CODE(
-        int vertex_count;
-        int face_count;
-    )
     int polygon_vertex_count;
     int prev_slice_vertex_index;
     int slice_vertex_index;
-    CGAL::Polyhedron_3<Kernel> polyhedron;
-    CGAL::Polyhedron_incremental_builder_3<HDS> builder;
 
 public:
     inline PolygonExtrusionBuilder(
@@ -47,18 +45,7 @@ public:
         trajectory_start(trajectory_start),
         trajectory_end(trajectory_end),
         closed(closed),
-        OPERATION_LOG_CODE(
-            vertex_count(0),
-            face_count(0),
-        )
-        polyhedron(polyhedron),
-        CGAL::Modifier_base<HDS>(),
-        builder(hds, true)
-    {}
-
-    // Required when deriving from CGAL::Modifier_base<HDS> to make this class
-    // not abstract:
-    void operator()(HDS& hds)
+        Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
     {}
 
     void run()
@@ -215,47 +202,30 @@ private:
             int slice_next_vertex_index = slice_vertex_index + 1;
             int prev_slice_next_vertex_index = prev_slice_vertex_index + 1;
 
-            OPERATION_LOG_MESSAGE_STREAM(<< "Face " << face_count << ": " <<
-                slice_vertex_index << " " << 
-                prev_slice_vertex_index << " " <<
-                prev_slice_next_vertex_index << " " <<
-                slice_next_vertex_index);
-
-            builder.begin_facet();
-            builder.add_vertex_to_facet(slice_vertex_index);
-            builder.add_vertex_to_facet(prev_slice_vertex_index);
-            builder.add_vertex_to_facet(prev_slice_next_vertex_index);
-            builder.add_vertex_to_facet(slice_next_vertex_index);
-            builder.end_facet();
-
-            OPERATION_LOG_CODE(
-                ++face_count;
-            )
+            this->add_face(
+                slice_vertex_index,
+                prev_slice_vertex_index,
+                prev_slice_next_vertex_index,
+                slice_next_vertex_index
+            );
 
             slice_vertex_index = slice_next_vertex_index;
             prev_slice_vertex_index = prev_slice_next_vertex_index;
         }
 
         // Add the last face:
-        OPERATION_LOG_MESSAGE_STREAM(<< "Last face " << face_count << ": " <<
-            slice_vertex_index << " " << 
-            prev_slice_vertex_index << " " <<
-            (prev_slice_vertex_index + 1 - polygon_vertex_count) << " " <<
-            (slice_vertex_index + 1 - polygon_vertex_count));
+        OPERATION_LOG_MESSAGE("Adding last face.");
 
-        builder.begin_facet();
-        builder.add_vertex_to_facet(slice_vertex_index);
-        builder.add_vertex_to_facet(prev_slice_vertex_index);
-        builder.add_vertex_to_facet(prev_slice_vertex_index + 1 - polygon_vertex_count);
-        builder.add_vertex_to_facet(slice_vertex_index + 1 - polygon_vertex_count);
-        builder.end_facet();
+        this->add_face(
+            slice_vertex_index,
+            prev_slice_vertex_index,
+            prev_slice_vertex_index + 1 - polygon_vertex_count,
+            slice_vertex_index + 1 - polygon_vertex_count
+        );
 
         ++slice_vertex_index;
         ++prev_slice_vertex_index;
 
-        OPERATION_LOG_CODE(
-            ++face_count;
-        )
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
@@ -273,12 +243,9 @@ private:
     {
         OPERATION_LOG_ENTER_FUNCTION(point);
 
-        OPERATION_LOG_MESSAGE_STREAM(<<
-            "Vertex " << vertex_count << ": " << point);
+        Polyhedron_3_BuilderBase<HDS>::add_vertex(point);
 
-        builder.add_vertex(point);
         OPERATION_LOG_CODE(
-            vertex_count++;
             cpp_cad_log::log_polygon_extrusion_builder_vertices(polygon_vertex_count, builder, vertex_count);
         )
 

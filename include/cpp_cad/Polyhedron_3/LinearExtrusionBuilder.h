@@ -8,7 +8,7 @@
 #include <operation_log.h>
 
 #include "../Polygon_2.h"
-
+#include "Polyhedron_3_BuilderBase.h"
 
 
 namespace cpp_cad
@@ -16,14 +16,14 @@ namespace cpp_cad
 
 // A class that extrudes a polygon in the xy plane into a 3D polyhedron.
 template <class HDS>
-class LinearExtrusionBuilder : public CGAL::Modifier_base<HDS>
+class LinearExtrusionBuilder : public Polyhedron_3_BuilderBase<HDS>
 {
+protected:
+    using Polyhedron_3_BuilderBase<HDS>::builder;
+
 private:
     Kernel::FT height;
     const Polygon_2 &polygon;
-    int vertex_count;
-    CGAL::Polyhedron_3<Kernel> polyhedron;
-    CGAL::Polyhedron_incremental_builder_3<HDS> builder;
 
 public:
     inline LinearExtrusionBuilder(
@@ -32,15 +32,7 @@ public:
         Kernel::FT height = 1)
     : polygon(polygon),
         height(height),
-        vertex_count(0),
-        polyhedron(polyhedron),
-        CGAL::Modifier_base<HDS>(),
-        builder(hds, true)
-    {}
-
-    // Required when deriving from CGAL::Modifier_base<HDS> to make this class
-    // not abstract:
-    void operator()(HDS& hds)
+        Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
     {}
 
     void run()
@@ -58,6 +50,10 @@ public:
         add_tessalation();
         builder.end_surface();
     }
+
+protected:
+    using Polyhedron_3_BuilderBase<HDS>::add_face;
+    using Polyhedron_3_BuilderBase<HDS>::add_vertex;
 
 private:
     void add_tessalation()
@@ -126,6 +122,10 @@ private:
         }
         builder.end_facet();
 
+        OPERATION_LOG_CODE(
+            ++face_count;
+        )
+
         OPERATION_LOG_LEAVE_FUNCTION();
     }
 
@@ -158,12 +158,12 @@ private:
                 next_top_vertex_index -= polygon.size();
             }
 
-            builder.begin_facet();
-            builder.add_vertex_to_facet(top_vertex_index);
-            builder.add_vertex_to_facet(base_vertex_index);
-            builder.add_vertex_to_facet(next_base_vertex_index);
-            builder.add_vertex_to_facet(next_top_vertex_index);
-            builder.end_facet();
+            add_face(
+                top_vertex_index,
+                base_vertex_index,
+                next_base_vertex_index,
+                next_top_vertex_index
+            );
 
             base_vertex_index = next_base_vertex_index;
             top_vertex_index = next_top_vertex_index;
@@ -189,33 +189,9 @@ private:
         }
         builder.end_facet();
 
-        OPERATION_LOG_LEAVE_FUNCTION();
-    }
-
-    inline void add_vertex(const Point_3 &point)
-    {
-        OPERATION_LOG_ENTER_FUNCTION(reinterpret_cast<const void*>(&point));
-
-        OPERATION_LOG_MESSAGE_STREAM(<<
-            "Vertex " << vertex_count << ": " << point);
-
-        builder.add_vertex(point);
-        vertex_count++;
-
-        OPERATION_LOG_LEAVE_FUNCTION();
-    }
-
-    inline void add_vertex(Kernel::FT x, Kernel::FT y, Kernel::FT z)
-    {
-        OPERATION_LOG_ENTER_FUNCTION(CGAL::to_double(x), CGAL::to_double(y), CGAL::to_double(z));
-
-        Kernel::Point_3 point(x, y, z);
-
-        OPERATION_LOG_MESSAGE_STREAM(<<
-            "Vertex " << vertex_count << ": " << point);
-
-        builder.add_vertex(point);
-        vertex_count++;
+        OPERATION_LOG_CODE(
+            ++face_count;
+        )
 
         OPERATION_LOG_LEAVE_FUNCTION();
     }

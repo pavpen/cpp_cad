@@ -6,7 +6,7 @@
 #include <cassert>
 #include <operation_log.h>
 
-#include "Cylinder_3_operation_logging.h"
+#include "Polyhedron_3_BuilderBase.h"
 
 
 namespace cpp_cad
@@ -15,15 +15,15 @@ namespace cpp_cad
 // A class that uses a polyhedron incremental builer to build the faces of a
 // cube.
 template <class HDS>
-class Cube_3_Builder : public CGAL::Modifier_base<HDS>
+class Cube_3_Builder : public Polyhedron_3_BuilderBase<HDS>
 {
+protected:
+    using Polyhedron_3_BuilderBase<HDS>::builder;
+
 private:
     Kernel::FT x_length;
     Kernel::FT y_length;
     Kernel::FT z_length;
-    int vertex_count;
-    CGAL::Polyhedron_3<Kernel> polyhedron;
-    CGAL::Polyhedron_incremental_builder_3<HDS> builder;
 
 public:
     inline Cube_3_Builder(
@@ -34,15 +34,7 @@ public:
     : x_length(x_length),
         y_length(y_length),
         z_length(z_length),
-        vertex_count(0),
-        polyhedron(polyhedron),
-        CGAL::Modifier_base<HDS>(),
-        builder(hds, true)
-    {}
-
-    // Required when deriving from CGAL::Modifier_base<HDS> to make this class
-    // not abstract:
-    void operator()(HDS& hds)
+        Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
     {}
 
     void run()
@@ -57,6 +49,10 @@ public:
         add_tessalation();
         builder.end_surface();
     }
+
+protected:
+    using Polyhedron_3_BuilderBase<HDS>::add_face;
+    using Polyhedron_3_BuilderBase<HDS>::add_vertex;
 
 private:
     void add_tessalation()
@@ -105,37 +101,6 @@ private:
         add_face(3, 7, 4, 0);
         // Bottom:
         add_face(7, 6, 5, 4);
-
-        OPERATION_LOG_LEAVE_FUNCTION();
-    }
-
-    // Adds a square face to the polyhedron.
-    //     The vertices must have already been added.
-    inline void add_face(int v0_index, int v1_index, int v2_index, int v3_index)
-    {
-        OPERATION_LOG_ENTER_FUNCTION(v0_index, v1_index, v2_index);
-
-        builder.begin_facet();
-        builder.add_vertex_to_facet(v0_index);
-        builder.add_vertex_to_facet(v1_index);
-        builder.add_vertex_to_facet(v2_index);
-        builder.add_vertex_to_facet(v3_index);
-        builder.end_facet();
-
-        OPERATION_LOG_LEAVE_FUNCTION();
-    }
-
-    inline void add_vertex(Kernel::FT x, Kernel::FT y, Kernel::FT z)
-    {
-        OPERATION_LOG_ENTER_FUNCTION(CGAL::to_double(x), CGAL::to_double(y), CGAL::to_double(z));
-
-        Kernel::Point_3 point(x, y, z);
-
-        OPERATION_LOG_MESSAGE_STREAM(<<
-            "Vertex " << vertex_count << ": " << point);
-
-        builder.add_vertex(point);
-        vertex_count++;
 
         OPERATION_LOG_LEAVE_FUNCTION();
     }
