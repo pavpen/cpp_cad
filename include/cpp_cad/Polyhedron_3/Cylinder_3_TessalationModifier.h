@@ -7,7 +7,8 @@
 namespace cpp_cad
 {
 
-// A polyhedron modifier that adds a tessalation of a sphere to the polyhedron.
+// A polyhedron modifier that adds a tessalation of a cylinder to the
+// polyhedron.
 template <class HDS>
 class Cylinder_3_TessalationModifier : public CGAL::Modifier_base<HDS>
 {
@@ -17,7 +18,6 @@ private:
     Kernel::FT height;
     int linear_subdivisions;
     CGAL::Polyhedron_3<Kernel> polyhedron;
-    int vertex_count;
 
 public:
     inline Cylinder_3_TessalationModifier(
@@ -29,7 +29,6 @@ public:
         height(height),
         linear_subdivisions(linear_subdivisions),
         polyhedron(polyhedron),
-        vertex_count(0),
         CGAL::Modifier_base<HDS>()
     {}
 

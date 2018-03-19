@@ -7,7 +7,8 @@
 namespace cpp_cad
 {
 
-// A polyhedron modifier that adds a cube to the polyhedron.
+// A polyhedron modifier that adds a polygon extrusion along the z axis to the
+// polyhedron.
 template <class HDS>
 class LinearExtrusionModifier : public CGAL::Modifier_base<HDS>
 {
@@ -15,7 +16,6 @@ private:
     Kernel::FT height;
     const Polygon_2 &polygon;
     CGAL::Polyhedron_3<Kernel> polyhedron;
-    int vertex_count;
 
 public:
     inline LinearExtrusionModifier(
@@ -24,7 +24,6 @@ public:
     : polygon(polygon),
         height(height),
         polyhedron(polyhedron),
-        vertex_count(0),
         CGAL::Modifier_base<HDS>()
     {}
 

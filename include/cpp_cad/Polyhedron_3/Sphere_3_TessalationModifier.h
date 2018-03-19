@@ -15,14 +15,12 @@ private:
     Kernel::FT circumsphere_r;
     int linear_subdivisions;
     CGAL::Polyhedron_3<Kernel> polyhedron;
-    int vertex_count;
 
 public:
     inline Sphere_3_TessalationModifier(CGAL::Polyhedron_3<Kernel> &polyhedron, Kernel::FT circumsphere_r = 1, int linear_subdivisions = 2)
     : circumsphere_r(circumsphere_r),
         linear_subdivisions(linear_subdivisions),
         polyhedron(polyhedron),
-        vertex_count(0),
         CGAL::Modifier_base<HDS>()
     {}
 

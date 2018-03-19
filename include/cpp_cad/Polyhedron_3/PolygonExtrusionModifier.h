@@ -7,7 +7,7 @@
 namespace cpp_cad
 {
 
-// A polyhedron modifier that adds a cube to the polyhedron.
+// A polyhedron modifier that adds a polygon extrusion to the polyhedron.
 template <class HDS, class TransformInputIterator>
 class PolygonExtrusionModifier : public CGAL::Modifier_base<HDS>
 {
@@ -17,7 +17,6 @@ private:
     TransformInputIterator &trajectory_start;
     const TransformInputIterator &trajectory_end;
     CGAL::Polyhedron_3<Kernel> polyhedron;
-    int vertex_count;
 
 public:
     inline PolygonExtrusionModifier(
@@ -29,7 +28,6 @@ public:
         trajectory_end(trajectory_end),
         closed(closed),
         polyhedron(polyhedron),
-        vertex_count(0),
         CGAL::Modifier_base<HDS>()
     {}
 

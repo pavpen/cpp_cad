@@ -16,7 +16,6 @@ private:
     Kernel::FT y_length;
     Kernel::FT z_length;
     CGAL::Polyhedron_3<Kernel> polyhedron;
-    int vertex_count;
 
 public:
     inline Cube_3_Modifier(
@@ -26,7 +25,6 @@ public:
         y_length(y_length),
         z_length(z_length),
         polyhedron(polyhedron),
-        vertex_count(0),
         CGAL::Modifier_base<HDS>()
     {}
 
