@@ -1,6 +1,8 @@
 #ifndef _CPP_CAD_POLYGON_2_H
 #define _CPP_CAD_POLYGON_2_H
 
+#include <operation_log.h>
+
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Projection_traits_xy_3.h>
 
@@ -15,7 +17,8 @@ namespace cpp_cad
     {
         public:
 
-        typedef CGAL::Polygon_2<CGAL::Projection_traits_xy_3<Kernel>>::Traits Traits;
+        typedef CGAL::Polygon_2<CGAL::Projection_traits_xy_3<Kernel>> CGAL_Polygon_2;
+        typedef CGAL_Polygon_2::Traits Traits;
 
         static Polygon_2 make_square(Kernel::FT x_length, Kernel::FT y_length)
         {
@@ -48,39 +51,87 @@ namespace cpp_cad
             return res;
         }
 
-        Polygon_2(const Traits &p_traits=Traits())
-            : CGAL::Polygon_2<CGAL::Projection_traits_xy_3<Kernel>>(p_traits)
+        using CGAL_Polygon_2::CGAL_Polygon_2;
+
+        inline Polygon_2(const Traits &p_traits=Traits())
+        : CGAL_Polygon_2(p_traits)
         {}
 
-        Polygon_2(const CGAL::Polygon_2<CGAL::Projection_traits_xy_3 <Kernel>> &polygon)
-            : CGAL::Polygon_2<CGAL::Projection_traits_xy_3 <Kernel>>(polygon)
+        inline Polygon_2(const CGAL::Polygon_2<CGAL::Projection_traits_xy_3 <Kernel>> &polygon)
+        : CGAL_Polygon_2(polygon)
         {}
+
+        // Copy constructor:
+        inline Polygon_2(const Polygon_2 &source)
+        : CGAL_Polygon_2(source)
+        {}
+
+        // Move constructor:
+        inline Polygon_2(Polygon_2 &&source)
+        {
+            // Hack a work-around move constructor:
+            Container &d_container = const_cast<Container&>(container());
+
+            d_container = std::move(source.container());
+        }
+
+        // Move constructor:
+        inline Polygon_2(CGAL_Polygon_2 &&source)
+        {
+            // Hack a work-around move constructor:
+            Container &d_container = const_cast<Container&>(container());
+
+            d_container = std::move(source.container());
+        }
+
+        // Move operator:
+        inline Polygon_2& operator=(CGAL_Polygon_2 &&source)
+        {
+            // Hack a work-around move constructor:
+            Container &d_container = const_cast<Container&>(container());
+
+            d_container = std::move(source.container());
+
+            return *this;
+        }
 
         Polygon_2(std::initializer_list<cpp_cad::Point_2> points)
             : CGAL::Polygon_2<CGAL::Projection_traits_xy_3<Kernel>>(Traits())
         {
-            static_cast<Container>(container()).reserve(points.size());
-
+            reserve(points.size());
             for (const auto &it : points)
             {
-                push_back(it);
+                this->push_back(it);
             }
         }
 
         Polygon_2(std::initializer_list<Point_3> points)
             : CGAL::Polygon_2<CGAL::Projection_traits_xy_3<Kernel>>(Traits())
         {
-            static_cast<Container>(container()).reserve(points.size());
+            reserve(points.size());
 
-            for (const auto &it : points)
-            {
-                insert(vertices_end(), it);
-            }
+            insert(vertices_end(), points.begin(), points.end());
+        }
+
+        inline void reserve(int size)
+        {
+            // Hack a work-around for reserving polygon points:
+            Container &d_container = const_cast<Container&>(container());
+
+            d_container.reserve(size);
+        }
+
+        inline void emplace_back(const cpp_cad::Point_3 &&x)
+        {
+            // Hack a work-around for emplacing polygon points:
+            Container &d_container = const_cast<Container&>(container());
+
+            d_container.emplace_back(x);
         }
 
         inline void push_back(const cpp_cad::Point_2 &x)
         {
-            insert(vertices_end(), Point_3(x.x(), x.y(), 0));
+            this->emplace_back(Point_3(x.x(), x.y(), 0));
         }
 
         // Applies an affine transformation to the polygon.

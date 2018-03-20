@@ -18,18 +18,22 @@
 namespace cpp_cad
 {
 
-// A class that extrudes a polygon in the xy plane into a 3D polyhedron.
-template <class HDS, class TransformInputIterator>
+// A class that connects a sequence of bijective polygons (track) into a
+// 3D polyhedron.
+template <class HDS, class PolygonInputIterator>
 class PolygonExtrusionBuilder : public Polyhedron_3_BuilderBase<HDS>
 {
 protected:
     using Polyhedron_3_BuilderBase<HDS>::builder;
+    OPERATION_LOG_CODE(
+        using Polyhedron_3_BuilderBase<HDS>::vertex_count;
+        using Polyhedron_3_BuilderBase<HDS>::face_count;
+    )
 
 private:
     bool closed;
-    const Polygon_2 &polygon;
-    TransformInputIterator &trajectory_start;
-    const TransformInputIterator &trajectory_end;
+    PolygonInputIterator &track_start;
+    const PolygonInputIterator &track_end;
     int polygon_vertex_count;
     int prev_slice_vertex_index;
     int slice_vertex_index;
@@ -37,21 +41,27 @@ private:
 public:
     inline PolygonExtrusionBuilder(
         CGAL::Polyhedron_3<Kernel> &polyhedron, HDS& hds,
-        const Polygon_2 &polygon,
-        TransformInputIterator &trajectory_start,
-        const TransformInputIterator &trajectory_end,
+        PolygonInputIterator &track_start,
+        const PolygonInputIterator &track_end,
         bool closed = false)
-    : polygon(polygon),
-        trajectory_start(trajectory_start),
-        trajectory_end(trajectory_end),
+    : track_start(track_start),
+        track_end(track_end),
         closed(closed),
         Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
     {}
 
     void run()
     {
-        polygon_vertex_count = polygon.size();
-        int slice_count = trajectory_start.steps_left();
+        OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
+
+        OPERATION_LOG_DUMP_VARS(track_start);
+
+        const Polygon_2 &first_polygon = *track_start;
+
+        OPERATION_LOG_DUMP_VARS(first_polygon);
+
+        polygon_vertex_count = first_polygon.size();
+        int slice_count = track_start.steps_left();
         int vertex_count = slice_count * polygon_vertex_count;
         int side_face_count;
         int end_face_count;
@@ -73,22 +83,24 @@ public:
                 4 * side_face_count + polygon_vertex_count * end_face_count;
 
         builder.begin_surface(vertex_count, face_count, halfedge_count);
-        add_tessalation();
+        add_tessalation(first_polygon);
         builder.end_surface();
+
+        OPERATION_LOG_LEAVE_FUNCTION();
     }
 
 private:
-    void add_tessalation()
+    void add_tessalation(const Polygon_2 &first_polygon)
     {
         OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
 
-        TransformInputIterator &it = trajectory_start;
+        PolygonInputIterator &it = track_start;
 
         OPERATION_LOG_DUMP_VARS(closed, polygon_vertex_count);
 
         // Add vertices:
         OPERATION_LOG_MESSAGE("Adding first slice vertices.");
-        add_slice_vertices(transform(*it, polygon));
+        add_slice_vertices(first_polygon);
 
         prev_slice_vertex_index = 0;
 
@@ -99,9 +111,9 @@ private:
         }
 
         slice_vertex_index = polygon_vertex_count;
-        for (++it; it != trajectory_end; ++it)
+        for (++it; it != track_end; ++it)
         {
-            add_slice_vertices(transform(*it, polygon));
+            add_slice_vertices(*it);
             add_side_faces();
         }
 

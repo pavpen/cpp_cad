@@ -20,6 +20,9 @@ class LinearExtrusionBuilder : public Polyhedron_3_BuilderBase<HDS>
 {
 protected:
     using Polyhedron_3_BuilderBase<HDS>::builder;
+    OPERATION_LOG_CODE(
+        using Polyhedron_3_BuilderBase<HDS>::face_count;
+    )
 
 private:
     Kernel::FT height;

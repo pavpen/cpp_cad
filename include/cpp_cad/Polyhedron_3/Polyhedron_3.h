@@ -7,6 +7,7 @@
 #include "../Aff_transformation_3.h"
 #include "../reference_frame.h"
 #include "../Polygon_2.h"
+#include "../Polygon_2_TransformsIterator.h"
 #include "../TransformIterator/TransformIterator.h"
 #include "Cube_3_Modifier.h"
 #include "Cylinder_3_TessalationModifier.h"
@@ -100,18 +101,22 @@ namespace cpp_cad
             Polygon_2 xz_polygon = transform(Aff_transformation_3::swap_yz(), polygon);
             bool closed = abs(2 * M_PI - abs(angle)) < eps;
             TransformIterator::ZRotation trajectory(0, angle, subdivision_c, closed);
+            Polygon_2_TransformsIterator<TransformIterator::ZRotation::TransformIterator>
+                track_begin(trajectory.begin(), xz_polygon);
+            Polygon_2_TransformsIterator<TransformIterator::ZRotation::TransformIterator>
+                track_end(trajectory.end(), xz_polygon);
 
             add_polygon_extrusion(
-                xz_polygon, trajectory.begin(), trajectory.end(), closed);
+                track_begin, track_end, closed);
         }
 
-        template<typename TransformInputIterator>
+        template<typename PolygonInputIterator>
         void add_polygon_extrusion(
-            const Polygon_2 &polygon, TransformInputIterator trajectory_start,
-            const TransformInputIterator &trajectory_end, bool closed = false)
+            PolygonInputIterator track_start,
+            const PolygonInputIterator &track_end, bool closed = false)
         {
-            PolygonExtrusionModifier<Polyhedron_3::HalfedgeDS, TransformInputIterator>
-                modifier(*this, polygon, trajectory_start, trajectory_end, closed);
+            PolygonExtrusionModifier<Polyhedron_3::HalfedgeDS, PolygonInputIterator>
+                modifier(*this, track_start, track_end, closed);
 
             delegate(modifier);
         }

@@ -12,7 +12,8 @@ namespace cpp_cad
     {
         public:
 
-        using CGAL::Aff_transformation_3<Kernel>::Aff_transformation_3;
+        typedef CGAL::Aff_transformation_3<Kernel> CGAL_Aff_transformation_3;
+        using CGAL_Aff_transformation_3::CGAL_Aff_transformation_3;
 
         static Aff_transformation_3 translate(
             Kernel::FT x, Kernel::FT y, Kernel::FT z)

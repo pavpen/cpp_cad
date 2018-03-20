@@ -61,6 +61,8 @@ namespace cpp_cad
 
             public:
 
+            typedef RotateTransformIterator<TransformFunctor> TransformIterator;
+
             Rotation<TransformFunctor>(
                 double start_angle = 0, double end_angle = 2 * M_PI,
                 int subdivision_c = 16, bool closed = true)
@@ -70,14 +72,14 @@ namespace cpp_cad
                 closed(closed)
             {}
 
-            RotateTransformIterator<TransformFunctor> begin()
+            TransformIterator begin()
             {
                 return RotateTransformIterator<TransformFunctor>(
                     start_angle, end_angle, subdivision_c, 0,
                     closed ? subdivision_c : subdivision_c + 1);
             }
 
-            RotateTransformIterator<TransformFunctor> end()
+            TransformIterator end()
             {
                 return RotateTransformIterator<TransformFunctor>(
                     start_angle, end_angle, subdivision_c,

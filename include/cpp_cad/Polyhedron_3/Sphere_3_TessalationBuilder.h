@@ -20,6 +20,9 @@ class Sphere_3_TessalationBuilder : public Polyhedron_3_BuilderBase<HDS>
 {
 protected:
     using Polyhedron_3_BuilderBase<HDS>::builder;
+    OPERATION_LOG_CODE(
+        using Polyhedron_3_BuilderBase<HDS>::vertex_count;
+    )
 
 private:
     double circumsphere_r;

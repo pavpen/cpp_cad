@@ -8,24 +8,22 @@ namespace cpp_cad
 {
 
 // A polyhedron modifier that adds a polygon extrusion to the polyhedron.
-template <class HDS, class TransformInputIterator>
+template <class HDS, class PolygonInputIterator>
 class PolygonExtrusionModifier : public CGAL::Modifier_base<HDS>
 {
 private:
     bool closed;
-    const Polygon_2 &polygon;
-    TransformInputIterator &trajectory_start;
-    const TransformInputIterator &trajectory_end;
+    PolygonInputIterator &track_start;
+    const PolygonInputIterator &track_end;
     CGAL::Polyhedron_3<Kernel> polyhedron;
 
 public:
     inline PolygonExtrusionModifier(
         CGAL::Polyhedron_3<Kernel> &polyhedron,
-        const Polygon_2 &polygon, TransformInputIterator &trajectory_start,
-        const TransformInputIterator &trajectory_end, bool closed = false)
-    : polygon(polygon),
-        trajectory_start(trajectory_start),
-        trajectory_end(trajectory_end),
+        PolygonInputIterator &track_start,
+        const PolygonInputIterator &track_end, bool closed = false)
+    : track_start(track_start),
+        track_end(track_end),
         closed(closed),
         polyhedron(polyhedron),
         CGAL::Modifier_base<HDS>()
@@ -33,8 +31,8 @@ public:
 
     void operator()(HDS& hds)
     {
-        PolygonExtrusionBuilder<HDS, TransformInputIterator> builder(
-            polyhedron, hds, polygon, trajectory_start, trajectory_end, closed);
+        PolygonExtrusionBuilder<HDS, PolygonInputIterator> builder(
+            polyhedron, hds, track_start, track_end, closed);
 
         builder.run();
     }
