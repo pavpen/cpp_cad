@@ -22,6 +22,11 @@ namespace cpp_cad
                 CGAL::TRANSLATION, CGAL::Vector_3<Kernel>(x, y, z));
         }
 
+        static Aff_transformation_3 translate(const Point_3 &vec)
+        {
+            return transformation(CGAL::TRANSLATION, vec);
+        }
+
         static Aff_transformation_3 scale(Kernel::FT f)
         {
             return Aff_transformation_3(
@@ -100,7 +105,17 @@ namespace cpp_cad
             return Aff_transformation_3(
                 cos(y_angle) * cos(z_angle), -sin(z_angle), sin(y_angle) * cos(z_angle),
                 cos(y_angle) * sin(z_angle),  cos(z_angle), sin(y_angle) * sin(z_angle),
-                              -sin(y_angle),             0, cos(y_angle)
+                              -sin(y_angle),             0,                cos(y_angle)
+            );
+        }
+
+        static Aff_transformation_3 rotate_y_rotate_z_translate(
+            double y_angle, double z_angle, double dx, double dy, double dz)
+        {
+            return Aff_transformation_3(
+                cos(y_angle) * cos(z_angle), -sin(z_angle), sin(y_angle) * cos(z_angle), dx,
+                cos(y_angle) * sin(z_angle),  cos(z_angle), sin(y_angle) * sin(z_angle), dy,
+                              -sin(y_angle),             0,                cos(y_angle), dz
             );
         }
 

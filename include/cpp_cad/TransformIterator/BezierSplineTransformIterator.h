@@ -1,14 +1,15 @@
-#ifndef _CPP_CAD_ROTATE_TRANSFORM_ITERATOR_H
-#define _CPP_CAD_ROTATE_TRANSFORM_ITERATOR_H
+#ifndef _CPP_CAD_BEZIER_SPLINE_TRANSFORM_ITERATOR_H
+#define _CPP_CAD_BEZIER_SPLINE_TRANSFORM_ITERATOR_H
+
+#include <iterator>
 
 #include "../Aff_transformation_3.h"
-#include "../reference_frame.h"
 
 
-namespace cpp_cad
+namespace
 {
-    template <Aff_transformation_3 TransformFunctor(double angle)>
-    class RotateTransformIterator
+
+    class BezierSplineTransformIterator
     {
         private:
 
@@ -21,7 +22,7 @@ namespace cpp_cad
 
         typedef std::bidirectional_iterator_tag iterator_category;
 
-        RotateTransformIterator(
+        BezierSplineTransformIterator(
             double start_angle = 0, double end_angle = 2 * M_PI,
             int subdivision_c = 16, int subdivision_i = 0,
             int subdivision_i_end = -1)
@@ -31,14 +32,14 @@ namespace cpp_cad
             subdivision_i_end(subdivision_i_end >= 0 ? subdivision_i_end : subdivision_c)
         {}
 
-        RotateTransformIterator(const RotateTransformIterator &source)
+        BezierSplineTransformIterator(const BezierSplineTransformIterator &source)
         : angle(source.angle),
             angle_step(source.angle_step),
             subdivision_i(source.subdivision_i),
             subdivision_i_end(source.subdivision_i_end)
         {}
 
-        RotateTransformIterator &operator++()
+        BezierSplineTransformIterator &operator++()
         {
             ++subdivision_i;
             angle += angle_step;
@@ -46,7 +47,7 @@ namespace cpp_cad
             return *this;
         }
 
-        RotateTransformIterator &operator--()
+        BezierSplineTransformIterator &operator--()
         {
             --subdivision_i;
             angle -= angle_step;
@@ -54,9 +55,9 @@ namespace cpp_cad
             return *this;
         }
 
-        RotateTransformIterator operator++(int)
+        BezierSplineTransformIterator operator++(int)
         {
-            RotateTransformIterator res(*this);
+            BezierSplineTransformIterator res(*this);
 
             ++subdivision_i;
             angle += angle_step;
@@ -67,7 +68,7 @@ namespace cpp_cad
         // Warning: Don't use this operator to compare iterators over two
         // different rotations, or, otherwise, not derived from each other by
         // forward, or backward iteration.
-        bool operator==(const RotateTransformIterator &rhs) const
+        bool operator==(const BezierSplineTransformIterator &rhs) const
         {
             return subdivision_i == rhs.subdivision_i;
         }
@@ -75,7 +76,7 @@ namespace cpp_cad
         // Warning: Don't use this operator to compare iterators over two
         // different rotations, or, otherwise, not derived from each other by
         // forward, or backward iteration.
-        bool operator!=(const RotateTransformIterator &rhs) const
+        bool operator!=(const BezierSplineTransformIterator &rhs) const
         {
             return subdivision_i != rhs.subdivision_i;
         }
@@ -91,9 +92,6 @@ namespace cpp_cad
         }
     };
 
-    typedef RotateTransformIterator<Aff_transformation_3::rotate_x>   XRotateTransformIterator;
-    typedef RotateTransformIterator<Aff_transformation_3::rotate_y>   YRotateTransformIterator;
-    typedef RotateTransformIterator<Aff_transformation_3::rotate_z>   ZRotateTransformIterator;
 }
 
-#endif // _CPP_CAD_ROTATE_TRANSFORM_ITERATOR_H
+#endif // _CPP_CAD_BEZIER_SPLINE_TRANSFORM_ITERATOR_H
