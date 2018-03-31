@@ -3,6 +3,8 @@
 
 #include <tuple>
 
+#include <CGAL/number_utils.h>
+
 
 namespace cpp_cad
 {
@@ -13,7 +15,19 @@ namespace vector_3
 template <class PointType>
 inline std::tuple<double, double, double> point_to_tuple(const PointType &p)
 {
-    return std::make_tuple(p.x(), p.y(), p.z());
+    return std::make_tuple(
+        CGAL::to_double(p.x()),
+        CGAL::to_double(p.y()),
+        CGAL::to_double(p.z()) );
+}
+
+inline std::tuple<double, double, double> operator-(
+    const std::tuple<double, double, double> &a)
+{
+    return std::make_tuple(
+        std::get<0>(a),
+        std::get<1>(a),
+        std::get<2>(a) );
 }
 
 inline std::tuple<double, double, double> operator+(
