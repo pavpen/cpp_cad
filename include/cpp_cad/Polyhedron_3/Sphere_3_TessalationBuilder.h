@@ -7,7 +7,7 @@
 #include <operation_log.h>
 
 #include "Polyhedron_3_BuilderBase.h"
-#include "Sphere_3_operation_logging.h"
+#include "../operation_logging/Polyhedron_3/Sphere_3_operation_logging.h"
 
 
 namespace cpp_cad
@@ -437,7 +437,7 @@ private:
         OPERATION_LOG_CODE(
             vertex_count++;
 
-            cpp_cad_log::log_sphere_tessalation_builder_vertices(
+            cpp_cad::log::log_sphere_tessalation_builder_vertices(
                 circumsphere_r, latitude_step, latitude, builder, vertex_count);
         )
 

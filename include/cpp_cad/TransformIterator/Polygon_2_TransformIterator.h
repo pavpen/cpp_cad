@@ -17,6 +17,8 @@ template <class TransformIterator>
 class Polygon_2_TransformIterator
 : public std::iterator<std::random_access_iterator_tag, Aff_transformation_3, int>
 {
+    friend class operation_log::ValueFormatter<Polygon_2_TransformIterator<TransformIterator>>;
+
 private:
     const Polygon_2 &polygon;
     TransformIterator transform_iterator;

@@ -1,5 +1,5 @@
-#ifndef _CPP_CAD_POLYGON_EXTRUSION_OPERATION_LOGGING_H
-#define _CPP_CAD_POLYGON_EXTRUSION_OPERATION_LOGGING_H
+#ifndef _CPP_CAD_OPERATION_LOGGING_POLYGON_EXTRUSION_H
+#define _CPP_CAD_OPERATION_LOGGING_POLYGON_EXTRUSION_H
 
 #include <algorithm>
 
@@ -9,13 +9,14 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Shape_detection_3/Shape_base.h>
 
-#include "../reference_frame.h"
-#include "Polyhedron_3_operation_logging.h"
+#include "../../reference_frame.h"
+#include "PolyhedronBuilder_operation_logging.h"
 
-namespace cpp_cad_log
+namespace cpp_cad
 {
 
-#ifdef OPERATION_LOG
+namespace log
+{
 
 template <class HDS>
 void log_polygon_extrusion_builder_vertices(
@@ -81,8 +82,8 @@ void log_polygon_extrusion_builder_vertices(
     log_polyhedron_builder_vertices(builder, vertex_count, extra_code_buf.str());
 }
 
-#endif // OPERATION_LOG
+}
 
 }
 
-#endif // _CPP_CAD_POLYGON_EXTRUSION_OPERATION_LOGGING_H
+#endif // _CPP_CAD_OPERATION_LOGGING_POLYGON_EXTRUSION_H

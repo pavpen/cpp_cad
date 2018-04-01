@@ -11,7 +11,7 @@
 #include "../reference_frame.h"
 #include "Polyhedron_3_BuilderBase.h"
 
-#include "PolygonExtrusion_operation_logging.h"
+#include "../operation_logging/Polyhedron_3/PolygonExtrusion_operation_logging.h"
 
 
 
@@ -54,13 +54,24 @@ public:
     {
         OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
 
-        OPERATION_LOG_DUMP_VARS(track_start);
+        OPERATION_LOG_DUMP_VARS(track_start, track_end);
+
+        if (track_start == track_end)
+        {
+            OPERATION_LOG_MESSAGE(
+                "Zero-length extrude trajectory (track_start == track_end)! Returning empty polyhedron.");
+            OPERATION_LOG_LEAVE_FUNCTION();
+            return;
+        }
 
         const Polygon_2 &first_polygon = *track_start;
 
         OPERATION_LOG_DUMP_VARS(first_polygon);
 
         polygon_vertex_count = first_polygon.size();
+
+        OPERATION_LOG_DUMP_VARS(polygon_vertex_count);
+
         int slice_count = track_end - track_start;
         int vertex_count = slice_count * polygon_vertex_count;
         int side_face_count;
@@ -258,7 +269,8 @@ private:
         Polyhedron_3_BuilderBase<HDS>::add_vertex(point);
 
         OPERATION_LOG_CODE(
-            cpp_cad_log::log_polygon_extrusion_builder_vertices(polygon_vertex_count, builder, vertex_count);
+            cpp_cad::log::log_polygon_extrusion_builder_vertices(
+                polygon_vertex_count, builder, vertex_count);
         )
 
         OPERATION_LOG_LEAVE_FUNCTION();

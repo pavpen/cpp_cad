@@ -7,7 +7,7 @@
 #include <operation_log.h>
 
 #include "Polyhedron_3_BuilderBase.h"
-#include "Cylinder_3_operation_logging.h"
+#include "../operation_logging/Polyhedron_3/Cylinder_3_operation_logging.h"
 
 
 namespace cpp_cad
@@ -299,7 +299,7 @@ private:
         OPERATION_LOG_CODE(
             vertex_count++;
 
-            cpp_cad_log::log_cylinder_tessalation_builder_vertices(
+            cpp_cad::log::log_cylinder_tessalation_builder_vertices(
                 CGAL::to_double(base_r), CGAL::to_double(top_r),
                 CGAL::to_double(height), builder, vertex_count);
         )
