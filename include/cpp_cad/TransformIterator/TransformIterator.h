@@ -1,8 +1,8 @@
 #ifndef _CPP_CAD_TRANSFORM_ITERATOR_H
 #define _CPP_CAD_TRANSFORM_ITERATOR_H
 
-#include "Circle_TransformIterator.h"
-#include "Rotate_TransformIterator.h"
+#include "CircleTransformIterator.h"
+#include "RotateTransformIterator.h"
 
 #include "Circle.h"
 #include "CubicBezierSegmentTransformIterator.h"

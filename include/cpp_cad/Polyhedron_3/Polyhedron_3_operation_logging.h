@@ -64,11 +64,11 @@ class ValueFormatter<cpp_cad::Polygon_2> : public ValueFormatterI
 
 // A value formatter for the `cpp_cad::Polygon_2` data type.
 template <class TransformIterator>
-class ValueFormatter<cpp_cad::Polygon_2_TransformsIterator<TransformIterator>> : public ValueFormatterI
+class ValueFormatter<cpp_cad::Polygon_2_TransformIterator<TransformIterator>> : public ValueFormatterI
 {
     private:
 
-    typedef cpp_cad::Polygon_2_TransformsIterator<TransformIterator> ValueType;
+    typedef cpp_cad::Polygon_2_TransformIterator<TransformIterator> ValueType;
 
     const ValueType value;
 
@@ -84,8 +84,8 @@ class ValueFormatter<cpp_cad::Polygon_2_TransformsIterator<TransformIterator>> :
     {
         std::stringstream res;
 
-        res << "Polygon_2_TransformsIterator { steps_left=" <<
-            value.steps_left() << " }";
+        res << "Polygon_2_TransformIterator { transform_iterator=" <<
+            value.transform_iterator << " }";
 
         return res.str();
     }

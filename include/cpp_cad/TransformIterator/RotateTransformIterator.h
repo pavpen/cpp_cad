@@ -22,10 +22,10 @@ namespace cpp_cad
         public:
 
         RotateTransformIterator(
-            double start_angle = 0, double end_angle = 2 * M_PI,
-            int subdivision_c = 16, int subdivision_i = 0)
+            double start_angle = 0, double angle_step = M_PI / 8,
+            int subdivision_i = 0)
         : angle(start_angle),
-            angle_step((end_angle - start_angle) / subdivision_c),
+            angle_step(angle_step),
             subdivision_i(subdivision_i)
         {}
 
@@ -89,7 +89,13 @@ namespace cpp_cad
         inline RotateTransformIterator operator+(const difference_type rhs) const
         {
             return RotateTransformIterator(
-                start_angle, end_angle, subdivision_c, subdivision_i + rhs);
+                angle + rhs * angle_step, angle_step, subdivision_i + rhs);
+        }
+
+        inline RotateTransformIterator operator-(const difference_type rhs) const
+        {
+            return RotateTransformIterator(
+                angle - rhs * angle_step, angle_step, subdivision_i - rhs);
         }
 
         friend inline RotateTransformIterator operator+(

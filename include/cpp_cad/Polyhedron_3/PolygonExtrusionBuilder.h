@@ -61,7 +61,7 @@ public:
         OPERATION_LOG_DUMP_VARS(first_polygon);
 
         polygon_vertex_count = first_polygon.size();
-        int slice_count = track_start.steps_left();
+        int slice_count = track_end - track_start;
         int vertex_count = slice_count * polygon_vertex_count;
         int side_face_count;
         int end_face_count;

@@ -34,16 +34,20 @@ namespace cpp_cad
 
             TransformIterator begin()
             {
+                int subdivision_c =
+                    closed ? subdivision_c : subdivision_c + 1;
+
                 return RotateTransformIterator<TransformFunctor>(
-                    start_angle, end_angle, subdivision_c, 0,
-                    closed ? subdivision_c : subdivision_c + 1);
+                    start_angle, (end_angle - start_angle) / subdivision_c);
             }
 
             TransformIterator end()
             {
+                int subdivision_c =
+                    closed ? subdivision_c : subdivision_c + 1;
+
                 return RotateTransformIterator<TransformFunctor>(
-                    start_angle, end_angle, subdivision_c,
-                    closed ? subdivision_c : subdivision_c + 1);
+                    start_angle, (end_angle - start_angle) / subdivision_c);
             }
         };
 

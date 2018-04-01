@@ -12,7 +12,7 @@ namespace cpp_cad
     {
         public:
 
-        typedef CGAL::Aff_transformation_3<Kernel> CGAL_Aff_transformation_3;
+        using CGAL_Aff_transformation_3 = CGAL::Aff_transformation_3<Kernel>;
         using CGAL_Aff_transformation_3::CGAL_Aff_transformation_3;
 
         static Aff_transformation_3 translate(
@@ -22,9 +22,9 @@ namespace cpp_cad
                 CGAL::TRANSLATION, CGAL::Vector_3<Kernel>(x, y, z));
         }
 
-        static Aff_transformation_3 translate(const Point_3 &vec)
+        static Aff_transformation_3 translate(const cpp_cad::Point_3 &vec)
         {
-            return transformation(CGAL::TRANSLATION, vec);
+            return Aff_transformation_3(CGAL::TRANSLATION, vec);
         }
 
         static Aff_transformation_3 scale(Kernel::FT f)
@@ -150,7 +150,16 @@ namespace cpp_cad
             );
 
             return res;
-        }    };
+        }
+
+        Aff_transformation_3(const CGAL::Translation, const cpp_cad::Point_3 p)
+        :   Aff_transformation_3(
+                1, 0, 0, p.x(),
+                0, 1, 0, p.y(),
+                0, 0, 1, p.z()
+            )
+        {}
+    };
 }
 
 #endif // _CPP_CAD_AFF_TRANSFORMATION_3_H
