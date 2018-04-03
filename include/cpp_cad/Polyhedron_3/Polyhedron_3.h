@@ -99,7 +99,7 @@ namespace cpp_cad
             int subdivision_c = 16, double eps = 1e-15)
         {
             Polygon_2 xz_polygon = transform(Aff_transformation_3::swap_yz(), polygon);
-            bool closed = abs(2 * M_PI - abs(angle)) < eps;
+            bool closed = fabs(2 * M_PI - fabs(angle)) < eps;
             TransformIterator::ZRotation trajectory(0, angle, subdivision_c, closed);
             Polygon_2_TransformIterator<TransformIterator::ZRotation::TransformIterator>
                 track_begin(trajectory.begin(), xz_polygon);

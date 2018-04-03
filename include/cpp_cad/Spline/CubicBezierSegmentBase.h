@@ -83,9 +83,9 @@ class CubicBezierSegmentBase
         double k3 = t * t * t; // t^3
 
         return PointType(
-            k0 * p0.x() + k1 * p1.x() + k2 * p2.x() + k3 * p3.x(),
-            k0 * p0.y() + k1 * p1.y() + k2 * p2.y() + k3 * p3.y(),
-            k0 * p0.z() + k1 * p1.z() + k2 * p2.z() + k3 * p3.z()
+            k0 * p0_value.x() + k1 * p1_value.x() + k2 * p2_value.x() + k3 * p3_value.x(),
+            k0 * p0_value.y() + k1 * p1_value.y() + k2 * p2_value.y() + k3 * p3_value.y(),
+            k0 * p0_value.z() + k1 * p1_value.z() + k2 * p2_value.z() + k3 * p3_value.z()
         );
     }
 
@@ -99,9 +99,9 @@ class CubicBezierSegmentBase
         double k3 = 3.0 * t * t;
 
         return PointType(
-            k0 * p0[0] + k1 * p1[0] + k2 * p2[0] + k3 * p3[0],
-            k0 * p0[1] + k1 * p1[1] + k2 * p2[1] + k3 * p3[1],
-            k0 * p0[2] + k1 * p1[2] + k2 * p2[2] + k3 * p3[2]
+            k0 * p0_value.x() + k1 * p1_value.x() + k2 * p2_value.x() + k3 * p3_value.x(),
+            k0 * p0_value.y() + k1 * p1_value.y() + k2 * p2_value.y() + k3 * p3_value.y(),
+            k0 * p0_value.z() + k1 * p1_value.z() + k2 * p2_value.z() + k3 * p3_value.z()
         );
     }
 

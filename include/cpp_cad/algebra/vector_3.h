@@ -87,12 +87,12 @@ double dot_3(
 inline std::tuple<double, double, double> find_perpendicular_axis(
     double x, double y, double z)
 {
-    if (abs(x) <= abs(y) && abs(x) <= abs(z))
+    if (fabs(x) <= fabs(y) && fabs(x) <= fabs(z))
     {
         // Use `res` = `input` cross `x`:
         return std::make_tuple(0, z, -y);
     }
-    else if (abs(y) <= abs(x) && abs(y) <= abs(z))
+    else if (fabs(y) <= fabs(x) && fabs(y) <= fabs(z))
     {
         // Use `res` = `input` cross `y`:
         return std::make_tuple(-z, 0, -y);

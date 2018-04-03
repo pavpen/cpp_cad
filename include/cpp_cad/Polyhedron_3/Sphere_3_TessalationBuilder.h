@@ -421,7 +421,7 @@ private:
     {
         OPERATION_LOG_ENTER_FUNCTION(latitude / M_PI, longitude / M_PI);
 
-        assert(abs(parallel_r - circumsphere_r * cos(latitude)) < 1e-15);
+        assert(fabs(parallel_r - circumsphere_r * cos(latitude)) < 1e-15);
 
         Kernel::Point_3 point(
                 parallel_r * cos(longitude),

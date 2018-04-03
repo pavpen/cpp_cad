@@ -37,7 +37,8 @@ class CubicBezierSegmentInflectionCalculator
 
     CubicBezierSegmentInflectionCalculator(
         const BezierSegment &segment, double eps = 1e-15)
-    : CubicBezierSegmentCalculatorBase<PointType>(segment, eps)
+    : CalculatorBase(segment, eps),
+        BasisMatrixCalculator(segment, eps)
     {}
 
     // Returns `t` parameter values in the [0; 1] range at which inflection
@@ -119,13 +120,13 @@ class CubicBezierSegmentInflectionCalculator
         double t_coeff = a_e * c_d - a_d * c_e;
         double const_coeff = b_e * c_d - b_d * c_e;
 
-        if (abs(t_squared_coeff) < eps)
+        if (fabs(t_squared_coeff) < eps)
         {
             // t_squared_coeff = 0, this is a linear equation.
-            if (abs(t_coeff) < eps)
+            if (fabs(t_coeff) < eps)
             {
                 // t_coeff is also = 0, this is const = 0 equation.
-                if (abs(const_coeff) < eps)
+                if (fabs(const_coeff) < eps)
                 {
                     // This is a 0 = 0 equation:
                     return std::make_tuple(INFINITY, INFINITY);

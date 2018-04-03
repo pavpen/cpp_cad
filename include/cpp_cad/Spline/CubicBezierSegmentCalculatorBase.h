@@ -1,6 +1,10 @@
 #ifndef _CPP_CAD_CUBIC_BEZIER_SEGMENT_CALCULATOR_BASE_H
 #define _CPP_CAD_CUBIC_BEZIER_SEGMENT_CALCULATOR_BASE_H
 
+#include <cmath>
+
+#include <operation_log.h>
+
 #include "CubicBezierSegmentBase.h"
 
 
@@ -33,9 +37,9 @@ class CubicBezierSegmentCalculatorBase
     // `t1` < `t2`, or `t2` is NaN.
     void filter_ts_to_0_1(double &t1, double &t2)
     {
-        if (t1 < 0)
+        if (t1 < eps)
         {
-            if (t2 >= 0 && t2 <= 1)
+            if (t2 >= eps && t2 + eps <= 1)
             {
                 t1 = t2;
                 t2 = NAN;
@@ -46,7 +50,7 @@ class CubicBezierSegmentCalculatorBase
                 t2 = NAN;
             }
         }
-        else if (t1 > 1)
+        else if (t1 + eps > 1)
         {
             if (t1 != INFINITY || t2 != INFINITY)
             {
@@ -56,7 +60,7 @@ class CubicBezierSegmentCalculatorBase
         }
         else
         {
-            if (t2 > 1)
+            if (t2 + eps > 1)
             {
                 t2 = NAN;
             }
@@ -80,21 +84,31 @@ class CubicBezierSegmentCalculatorBase
     // also ordered, so that `accum_t1` <= `accum_t2`, or `accum_t2` is NaN.
     void combine_dim_solution_ts(double &accum_t1, double &accum_t2, double t1, double t2)
     {
+        OPERATION_LOG_ENTER_FUNCTION(accum_t1, accum_t2, t1, t2);
+
         double t_c1 = combine_ts(accum_t1, t1);
         double t_c2 = combine_ts(accum_t2, t2);
+
+        OPERATION_LOG_DUMP_VARS(t_c1, t_c2);
 
         if (std::isnan(t_c1))
         {
             if (std::isnan(t_c2))
             {
+                OPERATION_LOG_MESSAGE("accum_t1 != t1 && accum_t2 != t2, comparing accum_t2 with t1");
+
                 t_c1 = combine_ts(accum_t2, t1);
                 if (std::isnan(t_c1))
                 {
+                    OPERATION_LOG_MESSAGE("accum_t1 != t1, accum_t2 != t2, and accum_t2 != t1, comparing accum_t1 with t2");
+
                     t_c1 = combine_ts(accum_t1, t2);
                 }
             }
             else
             {
+                OPERATION_LOG_MESSAGE("accum_t1 != t1, but accum_t2 == t2, take one solution (t1)");
+
                 t_c1 = t_c2;
                 t_c1 = NAN;
             }
@@ -102,6 +116,11 @@ class CubicBezierSegmentCalculatorBase
 
         accum_t1 = t_c1;
         accum_t2 = t_c2;
+
+        OPERATION_LOG_MESSAGE_STREAM(<< "Returning accum_t1=" <<
+            accum_t1 << ", accum_t2=" << accum_t2);
+
+        OPERATION_LOG_LEAVE_FUNCTION();
     }
 
     // Returns a value in the range [t1; t2] if the positive difference
@@ -113,7 +132,7 @@ class CubicBezierSegmentCalculatorBase
             return NAN;
         }
 
-        return abs(t1 - t2) < eps ? t1 : NAN;
+        return fabs(t1 - t2) < eps ? t1 : NAN;
     }
 };
 

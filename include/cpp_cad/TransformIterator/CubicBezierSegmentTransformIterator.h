@@ -52,7 +52,7 @@ namespace cpp_cad
             double x = CGAL::to_double(position.x());
             double y = CGAL::to_double(position.y());
 
-            if  (abs(x) < eps && abs(y) < eps)
+            if  (fabs(x) < eps && fabs(y) < eps)
             {
                 // Negligible change in direction. (Our sense of direction is
                 // the z axis.)  Perform only translation:

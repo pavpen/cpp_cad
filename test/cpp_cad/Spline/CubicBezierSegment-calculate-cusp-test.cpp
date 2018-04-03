@@ -1,20 +1,34 @@
+#include "../config.h"
+
 #include <iostream>
 
 #include <gtest/gtest.h>
+#include <operation_log.h>
 
+#include "cpp_cad/operation_logging/Spline/CubicBezierSegment.h"
 #include "cpp_cad/reference_frame.h"
 #include "cpp_cad/Spline/CubicBezierSegment.h"
 
-namespace
+namespace cpp_cad
 {
 
-TEST(CubicBezierSegmentCuspCalculator, calculate_cusp_ts)
+namespace test
 {
+
+namespace config
+{
+    std::string unit_test_name = "CubicBezierSegment-calculate-cusp-test";
+}
+
+TEST(CubicBezierSegmentCuspCalculator, no_cusp_no_inflection)
+{
+    OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
+
     cpp_cad::Point_3
-        p0(-1, 0, 0),
-        p1( 1, 2, 0),
-        p2( 0, 2, 0),
-        p3( 1, 0, 0);
+        p0(-10,   0, 0),
+        p1( -5,  15, 0),
+        p2( 20,  15, 0),
+        p3( 10,   0, 0);
 
     cpp_cad::CubicBezierSegment<cpp_cad::Point_3>
         bezier_segment(p0, p1, p2, p3);
@@ -22,8 +36,61 @@ TEST(CubicBezierSegmentCuspCalculator, calculate_cusp_ts)
     double t_cusp1, t_cusp2;
 
     std::tie(t_cusp1, t_cusp2) = bezier_segment.calculate_cusp_ts();
-    std::cout << "Cusp `t`s: " << "(" << t_cusp1 << ", " << t_cusp2 << ")" <<
-        std::endl;
+    OPERATION_LOG_DUMP_VARS(t_cusp1, t_cusp2);
+
+    OPERATION_LOG_DUMP_VARS(bezier_segment);
+
+    OPERATION_LOG_LEAVE_FUNCTION();
+}
+
+
+TEST(CubicBezierSegmentCuspCalculator, no_cusp_one_inflection)
+{
+    OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
+
+    cpp_cad::Point_3
+        p0(-10,   0, 0),
+        p1(-10,  20, 0),
+        p2( 10, -20, 0),
+        p3( 10,   0, 0);
+
+    cpp_cad::CubicBezierSegment<cpp_cad::Point_3>
+        bezier_segment(p0, p1, p2, p3);
+
+    double t_cusp1, t_cusp2;
+
+    std::tie(t_cusp1, t_cusp2) = bezier_segment.calculate_cusp_ts();
+    OPERATION_LOG_DUMP_VARS(t_cusp1, t_cusp2);
+
+    OPERATION_LOG_DUMP_VARS(bezier_segment);
+
+    OPERATION_LOG_LEAVE_FUNCTION();
+}
+
+
+TEST(CubicBezierSegmentCuspCalculator, one_cusp)
+{
+    OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
+
+    cpp_cad::Point_3
+        p0(-10,  0, 0),
+        p1( 10, 20, 0),
+        p2(-10, 20, 0),
+        p3( 10,  0, 0);
+
+    cpp_cad::CubicBezierSegment<cpp_cad::Point_3>
+        bezier_segment(p0, p1, p2, p3);
+
+    double t_cusp1, t_cusp2;
+
+    std::tie(t_cusp1, t_cusp2) = bezier_segment.calculate_cusp_ts();
+    OPERATION_LOG_DUMP_VARS(t_cusp1, t_cusp2);
+
+    OPERATION_LOG_DUMP_VARS(bezier_segment);
+
+    OPERATION_LOG_LEAVE_FUNCTION();
+}
+
 }
 
 }

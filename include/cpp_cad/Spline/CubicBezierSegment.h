@@ -28,7 +28,7 @@ class CubicBezierSegment : public CubicBezierSegmentBase<PointType>
         return linearizer.linearize_ts(output_iter, max_lateral_distance);
     }
 
-    std::tuple<double, double> calculate_cusp_ts(double eps=1e-15)
+    std::tuple<double, double> calculate_cusp_ts(double eps=1e-15) const
     {
         CubicBezierSegmentCuspCalculator<PointType> calculator(*this, eps);
 
@@ -37,7 +37,7 @@ class CubicBezierSegment : public CubicBezierSegmentBase<PointType>
         return calculator.calculate_cusp_ts();
     }
 
-    std::tuple<double, double> calculate_inflection_ts(double eps=1e-15)
+    std::tuple<double, double> calculate_inflection_ts(double eps=1e-15) const
     {
         CubicBezierSegmentInflectionCalculator<PointType>
             calculator(*this, eps);
