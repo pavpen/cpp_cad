@@ -5,6 +5,8 @@
 //
 // Operation Log configuration:
 //
+#undef OPERATION_LOG_ENABLE
+#define OPERATION_LOG_ENABLE
 #define OPERATION_LOG_INIT_FUNCTION_NAMESPACE  cpp_cad_operation_log
 #define OPERATION_LOG_INIT_FUNCTION_NAME       operation_log_init
 

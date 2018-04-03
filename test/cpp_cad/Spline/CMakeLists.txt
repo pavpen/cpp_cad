@@ -28,10 +28,10 @@ endif()
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++11" )
 
 add_executable(
-    CubicBezierSegment-calculate-cusp-test
-    CubicBezierSegment-calculate-cusp-test.cpp)
-target_include_directories(CubicBezierSegment-calculate-cusp-test PUBLIC
+    CubicBezierSegment-cusp-and-inflection-calculator-test
+    CubicBezierSegment-cusp-and-inflection-calculator-test.cpp)
+target_include_directories(CubicBezierSegment-cusp-and-inflection-calculator-test PUBLIC
     "../../../include")
-target_link_libraries(CubicBezierSegment-calculate-cusp-test gtest_main)
-add_test(NAME CubicBezierSegment-calculate-cusp-test_test
-    COMMAND CubicBezierSegment-calculate-cusp-test)
+target_link_libraries(CubicBezierSegment-cusp-and-inflection-calculator-test gtest_main)
+add_test(NAME CubicBezierSegment-cusp-and-inflection-calculator-test_test
+    COMMAND CubicBezierSegment-cusp-and-inflection-calculator-test)

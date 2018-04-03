@@ -25,9 +25,9 @@ inline std::tuple<double, double, double> operator-(
     const std::tuple<double, double, double> &a)
 {
     return std::make_tuple(
-        std::get<0>(a),
-        std::get<1>(a),
-        std::get<2>(a) );
+        -std::get<0>(a),
+        -std::get<1>(a),
+        -std::get<2>(a) );
 }
 
 inline std::tuple<double, double, double> operator+(

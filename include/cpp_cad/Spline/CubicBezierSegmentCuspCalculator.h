@@ -3,8 +3,6 @@
 
 #include <tuple>
 
-#include <operation_log.h>
-
 #include "CubicBezierSegment.h"
 #include "CubicBezierSegmentBasisMatrixCalculator.h"
 
@@ -110,8 +108,6 @@ class CubicBezierSegmentCuspCalculator
     std::tuple<double, double> calculate_dim_cusp_ts(
         double a, double b, double c)
     {
-        OPERATION_LOG_ENTER_FUNCTION(a, b, c)
-
         // V = 3 * a * t^2 + 2 * b * t + c
         if (fabs(a) < eps)
         {
@@ -122,30 +118,17 @@ class CubicBezierSegmentCuspCalculator
                 if (fabs(c) < eps)
                 {
                     // V = 0
-                    OPERATION_LOG_MESSAGE(
-                        "All control points concide, returning (INF, INF).");
-                    OPERATION_LOG_LEAVE_FUNCTION();
-
                     return std::make_tuple(INFINITY, INFINITY);
                 }
                 else
                 {
                     // V != 0
-                    OPERATION_LOG_MESSAGE(
-                        "V = const != 0, returning (NAN, NAN).");
-                    OPERATION_LOG_LEAVE_FUNCTION();
-
                     return std::make_tuple(NAN, NAN);
                 }
             }
             else
             {
                 // V = 2 * b * t + c, b != 0:
-                OPERATION_LOG_MESSAGE_STREAM(<<
-                    "Linear velocity, returning (" <<
-                    (-c / (2 * b)) << ", NAN).");
-                OPERATION_LOG_LEAVE_FUNCTION();
-
                 return std::make_tuple(
                     -c / (2 * b),
                     NAN);
@@ -156,20 +139,14 @@ class CubicBezierSegmentCuspCalculator
             // V = 3 * a * t^2 + 2 * b * t + c, a != 0:
             double det = sqrt(b * b - 3 * a * c);
 
-            OPERATION_LOG_DUMP_VARS(det, eps);
-
             if (det < eps)
             {
-                // solption 2 = solution 1. Report 1 solution.
-                OPERATION_LOG_MESSAGE_STREAM(<<
-                    "Coinciding quadratic solutions, returning (" <<
-                    (-b / (3 * a)) << ", NAN).");
-                OPERATION_LOG_LEAVE_FUNCTION();
-
+                // Coinciding quadratic solutions. Report 1 solution.
                 return std::make_tuple(-b / (3 * a), NAN);
             }
             else
             {
+                // solution 2 != solution 1.
                 // Order solutions, so t1 < t2:
                 double t1, t2;
 
@@ -183,12 +160,7 @@ class CubicBezierSegmentCuspCalculator
                     t1 = (-b - det) / (3 * a);
                     t2 = (-b + det) / (3 * a);
                 }
-                OPERATION_LOG_MESSAGE_STREAM(<<
-                    "Distinct quadratic solutions, returning (" <<
-                    t1 << ", " << t2 << ").");
-                OPERATION_LOG_LEAVE_FUNCTION();
 
-                // solution 2 != solution 1.
                 return std::make_tuple(t1, t2);
             }
         }

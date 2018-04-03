@@ -1,6 +1,7 @@
 #ifndef _CPP_CAD_OPERATION_LOGGING_CUBIC_BEZIER_SEGMENT_H
 #define _CPP_CAD_OPERATION_LOGGING_CUBIC_BEZIER_SEGMENT_H
 
+#include <cmath>
 #include <vector>
 
 #include <operation_log.h>
@@ -147,7 +148,7 @@ R"code(
 
         std::tie(t_cusp1, t_cusp2) = value.calculate_cusp_ts();
 
-        if (!std::isnan(t_cusp1))
+        if (!std::isnan(t_cusp1) && std::isfinite(t_cusp1))
         {
             code << R"code(
     // Show cusp points:
@@ -161,7 +162,7 @@ R"code(
                 point.x() << ", " <<
                 point.y() << ", " <<
                 point.z() << ");" << std::endl;
-            if (!std::isnan(t_cusp2))
+            if (!std::isnan(t_cusp2) && std::isfinite(t_cusp2))
             {
                 point = value.evaluate(t_cusp2);
                 code << "addVertex(" <<
@@ -186,7 +187,7 @@ R"code(
 
         std::tie(t_inflection1, t_inflection2) = value.calculate_inflection_ts();
 
-        if (!std::isnan(t_inflection1))
+        if (!std::isnan(t_inflection1) && std::isfinite(t_inflection1))
         {
             code << R"code(
     // Show inflection points:
@@ -200,7 +201,7 @@ R"code(
                 point.x() << ", " <<
                 point.y() << ", " <<
                 point.z() << ");" << std::endl;
-            if (!std::isnan(t_inflection2))
+            if (!std::isnan(t_inflection2) && std::isfinite(t_inflection2))
             {
                 point = value.evaluate(t_inflection2);
                 code << "addVertex(" <<
