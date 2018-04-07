@@ -20,12 +20,13 @@ class CubicBezierSegment : public CubicBezierSegmentBase<PointType>
 
     template <class OutputIterator>
     OutputIterator &linearize_ts(
-        OutputIterator &output_iter,
-        double max_lateral_distance, double eps=1e-15)
+        OutputIterator output_iter,
+        double max_lateral_distance, double eps=1e-15) const
     {
-        CubicBezierSegmentLinearizer<PointType> linearizer(*this, eps);
+        CubicBezierSegmentLinearizer<PointType>
+            linearizer(*this, max_lateral_distance, eps);
 
-        return linearizer.linearize_ts(output_iter, max_lateral_distance);
+        return linearizer.linearize_ts(output_iter);
     }
 
     std::tuple<double, double> calculate_cusp_ts(double eps=1e-15) const

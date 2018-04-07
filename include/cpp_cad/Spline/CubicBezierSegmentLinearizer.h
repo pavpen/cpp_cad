@@ -34,6 +34,7 @@ class CubicBezierSegmentLinearizer
     using BezierSegment = typename CalculatorBase::BezierSegment;
     using BasisMatrixCalculator =
         CubicBezierSegmentBasisMatrixCalculator<PointType>;
+    using CuspCalculator = CubicBezierSegmentCuspCalculator<PointType>;
     using InflectionCalculator =
         CubicBezierSegmentInflectionCalculator<PointType>;
     using QrsBasisCalculator =
@@ -86,9 +87,11 @@ class CubicBezierSegmentLinearizer
     CubicBezierSegmentLinearizer(
         const BezierSegment &segment,
         double max_lateral_distance, double eps = 1e-15)
-    : CubicBezierSegmentCuspCalculator<PointType>(segment, eps),
-        CubicBezierSegmentInflectionCalculator<PointType>(segment, eps),
-        CubicBezierSegmentQrsBasisCalculator<PointType>(segment, eps),
+    : CalculatorBase(segment, eps),
+        BasisMatrixCalculator(segment, eps),
+        CuspCalculator(segment, eps),
+        InflectionCalculator(segment, eps),
+        QrsBasisCalculator(segment, eps),
         max_lateral_distance(max_lateral_distance)
     {}
 
@@ -115,14 +118,14 @@ class CubicBezierSegmentLinearizer
 
         double t_start;
 
-        if (t_cusp1 >= eps)
+        if (t_cusp1 > eps)
         {
-            linearize_cusp_free_range(output_iter, 0, t_cusp1);
-            t_start = t_cusp1;
+            linearize_cusp_free_range(output_iter, 0, t_cusp1 - eps);
+            t_start = t_cusp1 + eps;
         }
         else
         {
-            t_start = 0;
+            t_start = t_cusp1 + eps;
         }
 
         if (std::isnan(t_cusp2) || t_cusp2 + eps >= 1)
@@ -131,8 +134,12 @@ class CubicBezierSegmentLinearizer
         }
         else
         {
-            linearize_cusp_free_range(output_iter, t_start, t_cusp2);
-            return linearize_cusp_free_range(output_iter, t_cusp2, 1);
+            // Merge cusps that are too close together:
+            if (t_cusp2 - eps > t_start + eps)
+            {
+                linearize_cusp_free_range(output_iter, t_start, t_cusp2 - eps);
+            }
+            return linearize_cusp_free_range(output_iter, t_cusp2 + eps, 1);
         }
     }
 
@@ -151,7 +158,7 @@ class CubicBezierSegmentLinearizer
 
         if (std::isnan(t_start))
         {
-            return;
+            return output_iter;
         }
 
         linearize_cusp_free_range_to_inflection(
@@ -159,14 +166,14 @@ class CubicBezierSegmentLinearizer
 
         if (std::isnan(t_start))
         {
-            return;
+            return output_iter;
         }
 
         return parabolic_linearize_range(output_iter, t_start, t_end);
     }
 
     template <class OutputIterator>
-    inline void linearize_cusp_free_range_to_inflection(
+    inline OutputIterator &linearize_cusp_free_range_to_inflection(
         OutputIterator &output_iter,
         double &t_start, double &t_end, double t_inflect_start, double t_inflect_end)
     {
@@ -182,7 +189,7 @@ class CubicBezierSegmentLinearizer
             {
                 // Linearize to inflection range start:
                 output_iter = parabolic_linearize_range(
-                    t_start, t_inflect_start, output_iter);
+                    output_iter, t_start, t_inflect_start);
             }
             if (t_end <= t_inflect_end + eps)
             {
@@ -263,12 +270,10 @@ class CubicBezierSegmentLinearizer
     // Requires the `q`, `r`, `s` basis to have been calculated.
     inline double parabolic_split_t()
     {
-        double r2 = vector_3::dot_3(
-            segment.p2().x(), segment.p2().y(), segment.p2().z(),
-            r_x, r_y, r_z);
-        double s2 = vector_3::dot_3(
-            segment.p2().x(), segment.p2().y(), segment.p2().z(),
-            s_x, s_y, s_z);
+        std::tuple<double, double, double>
+            p2 = vector_3::point_to_tuple(segment.p2());
+        double r2 = vector_3::dot_3(p2, std::make_tuple(r_x, r_y, r_z));
+        double s2 = vector_3::dot_3(p2, std::make_tuple(s_x, s_y, s_z));
 
         return 2 * sqrt( max_lateral_distance / 3 * sqrt(r2 * r2 + s2 * s2) );
     }
@@ -369,12 +374,10 @@ class CubicBezierSegmentLinearizer
     // Requires the `q`, `r`, `s` basis to have been calculated.
     inline void calculate_t_f()
     {
-        double r3 = dot_3(
-            segment.p3().x(), segment.p3().y(), segment.p3().z(),
-            r_x, r_y, r_z);
-        double s3 = dot_3(
-            segment.p3().x(), segment.p3().y(), segment.p3().z(),
-            s_x, s_y, s_z);
+        std::tuple<double, double, double> p3 =
+            vector_3::point_to_tuple(segment.p3());
+        double r3 = vector_3::dot_3(p3, std::make_tuple(r_x, r_y, r_z));
+        double s3 = vector_3::dot_3(p3, std::make_tuple(s_x, s_y, s_z));
 
         t_f = cbrt(max_lateral_distance / sqrt(r3 * r3 + s3 * s3));
     }

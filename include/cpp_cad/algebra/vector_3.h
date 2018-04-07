@@ -60,9 +60,24 @@ inline std::tuple<double, double, double> operator*(
         b * std::get<2>(a) );
 }
 
+inline std::tuple<double, double, double> operator/(
+    const std::tuple<double, double, double> &a,
+    double b)
+{
+    return std::make_tuple(
+        std::get<0>(a) / b,
+        std::get<1>(a) / b,
+        std::get<2>(a) / b );
+}
+
 inline double norm_3_squared(double x, double y, double z)
 {
     return x*x + y*y + z*z;
+}
+
+inline double norm_3_squared(std::tuple<double, double, double> a)
+{
+    return norm_3_squared(std::get<0>(a), std::get<1>(a), std::get<2>(a));
 }
 
 inline std::tuple<double, double, double> cross_3(
@@ -76,11 +91,30 @@ inline std::tuple<double, double, double> cross_3(
     );
 }
 
+inline std::tuple<double, double, double> cross_3(
+    std::tuple<double, double, double> a,
+    std::tuple<double, double, double> b)
+{
+    return cross_3(
+        std::get<0>(a), std::get<1>(a), std::get<2>(a),
+        std::get<0>(b), std::get<1>(b), std::get<2>(b)
+    );
+}
+
 double dot_3(
     double x1, double y1, double z1,
     double x2, double y2, double z2)
 {
     return x1 * x2 + y1 * y2 + z1 * z2;
+}
+
+double dot_3(
+    std::tuple<double, double, double> a,
+    std::tuple<double, double, double> b)
+{
+    return std::get<0>(a) * std::get<0>(b) +
+        std::get<1>(a) * std::get<1>(b) +
+        std::get<2>(a) * std::get<2>(b);
 }
 
 // Returns some unit vector orthogonal to a given vector.
@@ -104,12 +138,18 @@ inline std::tuple<double, double, double> find_perpendicular_axis(
     }
 }
 
+inline std::tuple<double, double, double> find_perpendicular_axis(
+    std::tuple<double, double, double> a)
+{
+    return find_perpendicular_axis(
+        std::get<0>(a), std::get<1>(a), std::get<2>(a));
+}
+
 // Returns the squared distance between two points.
 template <class PointType>
-inline double distance_3_squared(const PointType &p0, const PointType &p1)
+inline double distance_3_squared(const PointType p0, const PointType p1)
 {
-    return norm_3_squared(
-        p1.x() - p0.x(), p1.y() - p0.y(), p1.z() - p0.z());
+    return CGAL::to_double( (p1 - p0).squared_length() );
 }
 
 }

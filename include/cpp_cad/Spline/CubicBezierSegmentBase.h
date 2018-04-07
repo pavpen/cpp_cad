@@ -24,7 +24,7 @@ class CubicBezierSegmentBase
 
     public:
 
-    CubicBezierSegmentBase(PointType &p0, PointType &p1, PointType &p2, PointType &p3)
+    CubicBezierSegmentBase(PointType p0, PointType p1, PointType p2, PointType p3)
     : p0_value(p0),
         p1_value(p1),
         p2_value(p2),
@@ -114,10 +114,10 @@ class CubicBezierSegmentBase
     CubicBezierSegmentBase<PointType> split_from_t(double t_cut) const
     {
         std::tuple<double, double, double>
-            p0 = vector_3::point_to_tuple(p0_value()),
-            p1 = vector_3::point_to_tuple(p1_value()),
-            p2 = vector_3::point_to_tuple(p2_value()),
-            p3 = vector_3::point_to_tuple(p3_value()),
+            p0 = vector_3::point_to_tuple(p0_value),
+            p1 = vector_3::point_to_tuple(p1_value),
+            p2 = vector_3::point_to_tuple(p2_value),
+            p3 = vector_3::point_to_tuple(p3_value),
             p0_prime = p0 + (p1 - p0) * t_cut,
             p1_prime = p1 + (p2 - p1) * t_cut,
             p2_prime = p2 + (p3 - p2) * t_cut,

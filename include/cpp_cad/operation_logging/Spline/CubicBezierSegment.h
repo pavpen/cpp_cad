@@ -2,6 +2,8 @@
 #define _CPP_CAD_OPERATION_LOGGING_CUBIC_BEZIER_SEGMENT_H
 
 #include <cmath>
+#include <iterator>
+#include <list>
 #include <vector>
 
 #include <operation_log.h>
@@ -84,21 +86,10 @@ class ValueFormatter<cpp_cad::CubicBezierSegment<PointType>> : public ValueForma
         add_cusp_points_code(code);
         add_inflection_points_code(code);
         add_control_points_code(code);
+        add_curve_code(code);
+        add_linerization_code(code);
 
         code << R"code(
-    // Show the Bézier segment:
-    material = new THREE.LineBasicMaterial( { color : 0xd0d0d0 } );
-
-    var curve = new THREE.CubicBezierCurve3(
-        geometry.vertices[0], geometry.vertices[1],
-        geometry.vertices[2], geometry.vertices[3]);
-
-    geometry = new THREE.BufferGeometry().setFromPoints( curve.getPoints(50) );
-
-    var curveObject = new THREE.Line( geometry, material );
-
-    scene.add(curveObject);
-
     // Register the scene for rendering:
     var renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(250, 250);
@@ -249,6 +240,51 @@ R"code(
     var pointCloud = new THREE.Points(geometry, material);
 
     scene.add(pointCloud);
+)code";
+    }
+
+    void add_curve_code(std::stringstream &code)
+    {
+        code << R"code(
+    // Show the Bézier segment:
+    material = new THREE.LineBasicMaterial( { color : 0xd0d0d0 } );
+
+    var curve = new THREE.CubicBezierCurve3(
+        geometry.vertices[0], geometry.vertices[1],
+        geometry.vertices[2], geometry.vertices[3]);
+
+    geometry = new THREE.BufferGeometry().setFromPoints( curve.getPoints(50) );
+
+    var curveObject = new THREE.Line( geometry, material );
+
+    scene.add(curveObject);
+)code";
+    }
+
+    void add_linerization_code(std::stringstream &code)
+    {
+        code << R"code(
+    // Draw the curve linearization:
+    material = new THREE.LineBasicMaterial( { color : 0xa0d0a0 } );
+
+    geometry = new THREE.BufferGeometry();
+)code";
+        std::list<double> vertex_ts;
+        value.linearize_ts(std::back_inserter(vertex_ts), 1);
+        for (const auto t : vertex_ts)
+        {
+            cpp_cad::Point_3 point = value.evaluate(t);
+
+            code << "    geometry.vertices.push(new THREE.Vector3(" <<
+                point.x() << ", " << point.y() << ", " << point.z() <<
+                "));" << std::endl;
+        }
+        code << R"code(
+    geometry.computeBoundingBox();
+
+    curveObject = new THREE.Line( geometry, material );
+
+    scene.add(curveObject);
 )code";
     }
 };

@@ -17,7 +17,7 @@ namespace test
 
 namespace config
 {
-    std::string unit_test_name = "CubicBezierSegment-calculate-cusp-test";
+    std::string unit_test_name = "CubicBezierSegment-cusp-and-inflection-calculator-test";
 }
 
 TEST(CubicBezierSegmentCuspAndInflectionCalculator, no_cusp_no_inflection)

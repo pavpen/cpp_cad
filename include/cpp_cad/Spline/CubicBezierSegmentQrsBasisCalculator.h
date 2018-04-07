@@ -8,6 +8,8 @@
 namespace cpp_cad
 {
 
+using vector_3::operator/;
+
 // Calculates the orthonormal basis vectors of a coordinate system along the
 // control points of a cubic Bézier curve segment, used for estimating errors
 // when converting a curve into line segments by Hain, Ahmad, and Langan in
@@ -22,10 +24,7 @@ class CubicBezierSegmentQrsBasisCalculator
     using BezierSegment = typename CalculatorBase::BezierSegment;
 
     using CalculatorBase::eps;
-    using CalculatorBase::p0;
-    using CalculatorBase::p1;
-    using CalculatorBase::p2;
-    using CalculatorBase::p3;
+    using CalculatorBase::segment;
 
     protected:
 
@@ -43,30 +42,30 @@ class CubicBezierSegmentQrsBasisCalculator
 
     CubicBezierSegmentQrsBasisCalculator(
         const BezierSegment &segment, double eps = 1e-15)
-    : CubicBezierSegmentCalculatorBase<PointType>(segment, eps)
+    : CalculatorBase(segment, eps)
     {}
 
     void calculate_qrs_basis()
     {
-        if (distance_3_squared(p0(), p1()) < eps)
+        if (vector_3::distance_3_squared(segment.p0(), segment.p1()) < eps)
         {
-            calculate_qrs_basis(p0, p2, p3);
+            calculate_qrs_basis(segment.p0(), segment.p2(), segment.p3());
         }
-        else if (distance_3_squared(p0, p2) < eps)
+        else if (vector_3::distance_3_squared(segment.p0(), segment.p2()) < eps)
         {
-            calculate_qrs_basis(p0, p1, p3);
+            calculate_qrs_basis(segment.p0(), segment.p1(), segment.p3());
         }
-        else if (distance_3_squared(p0, p3) < eps)
+        else if (vector_3::distance_3_squared(segment.p0(), segment.p3()) < eps)
         {
-            calculate_qrs_basis(p0, p1, p2);
+            calculate_qrs_basis(segment.p0(), segment.p1(), segment.p2());
         }
-        else if (distance_3_squared(p1, p2) < eps)
+        else if (vector_3::distance_3_squared(segment.p1(), segment.p2()) < eps)
         {
-            calculate_qrs_basis(p0, p1, p3);
+            calculate_qrs_basis(segment.p0(), segment.p1(), segment.p3());
         }
         else
         {
-            calculate_qrs_basis(p0, p1, p2);
+            calculate_qrs_basis(segment.p0(), segment.p1(), segment.p2());
         }
     }
 
@@ -89,28 +88,20 @@ class CubicBezierSegmentQrsBasisCalculator
             return;
         }
 
-        q_x = p1.x() - p0.x();
-        q_y = p1.y() - p0.y();
-        q_z = p1.z() - p0.z();
+        std::tuple<double, double, double> q =
+            vector_3::point_to_tuple(p1) - vector_3::point_to_tuple(p0);
 
-        double norm = sqrt(vector_3::norm_3_squared(q_x, q_y, q_z));
+        q = q / sqrt(vector_3::norm_3_squared(q));
 
-        q_x /= norm;
-        q_y /= norm;
-        q_z /= norm;
+        std::tuple<double, double, double> r =
+            vector_3::point_to_tuple(p2) - vector_3::point_to_tuple(p0);
+        r = r / sqrt(vector_3::norm_3_squared(r));
 
-        r_x = p2().x - p0.x();
-        r_y = p2().y - p0.y();
-        r_z = p2().z - p0.z();
-        norm = sqrt(vector_3::norm_3_squared(r_x, r_y, r_z));
-        r_x /= norm;
-        r_y /= norm;
-        r_z /= norm;
+        std::tuple<double, double, double> s = vector_3::cross_3(q, r);
 
-        std::tie(s_x, s_y, s_z) =
-            vector_3::cross_3(q_x, q_y, q_z, r_x, r_y, r_z);
-        std::tie(r_x, r_y, r_z) =
-            vector_3::cross_3(s_x, s_y, s_z, q_x, q_y, q_z);
+        std::tie(q_x, q_y, q_z) = q;
+        std::tie(r_x, r_y, r_z) = vector_3::cross_3(s, q);
+        std::tie(s_x, s_y, s_z) = s;
     }
 
     // Construct `q`, `r` and `s` basis vectors from only 2 points,
@@ -123,23 +114,18 @@ class CubicBezierSegmentQrsBasisCalculator
             return;
         }
 
-        q_x = p1.x() - p0.x();
-        q_y = p1.y() - p0.y();
-        q_z = p1.z() - p0.z();
+        std::tuple<double, double, double> q =
+            vector_3::point_to_tuple(p1) - vector_3::point_to_tuple(p0);
 
-        double norm = sqrt(vector_3::norm_3_squared(q_x, q_y, q_z));
+        q = q / sqrt(vector_3::norm_3_squared(q));
 
-        q_x /= norm;
-        q_y /= norm;
-        q_z /= norm;
+        std::tuple<double, double, double> r =
+            vector_3::find_perpendicular_axis(q);
+        std::tuple<double, double, double> s = vector_3::cross_3(q, r);
 
-        std::tie(r_x, r_y, r_z) =
-            vector_3::find_perpendicular_axis(q_x, q_y, q_z);
-
-        std::tie(s_x, s_y, s_z) =
-            vector_3::cross_3(q_x, q_y, q_z, r_x, r_y, r_z);
-        std::tie(r_x, r_y, r_z) =
-            vector_3::cross_3(s_x, s_y, s_z, q_x, q_y, q_z);
+        std::tie(q_x, q_y, q_z) = q;
+        std::tie(r_x, r_y, r_z) = vector_3::cross_3(s, q);
+        std::tie(s_x, s_y, s_z) = s;
     }
 
     // Construct some `q`, `r` and `s` basis vectors when all control points

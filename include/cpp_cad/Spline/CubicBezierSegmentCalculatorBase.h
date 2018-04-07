@@ -19,13 +19,13 @@ class CubicBezierSegmentCalculatorBase
 
     protected:
 
-    const BezierSegment &segment;
+    const BezierSegment segment;
     double eps;
 
     public:
 
     CubicBezierSegmentCalculatorBase(
-        const BezierSegment &segment, double eps = 1e-15)
+        const BezierSegment segment, double eps = 1e-15)
     : segment(segment),
         eps(eps)
     {}
