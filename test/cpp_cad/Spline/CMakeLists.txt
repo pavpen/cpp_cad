@@ -25,7 +25,7 @@ if ( NOT Boost_FOUND )
 
 endif()
 
-SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++11" )
+SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++11 -DOPERATION_LOG_ENABLE" )
 
 add_executable(
     CubicBezierSegment-cusp-and-inflection-calculator-test

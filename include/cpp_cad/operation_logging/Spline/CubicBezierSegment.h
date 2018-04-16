@@ -267,10 +267,10 @@ R"code(
     // Draw the curve linearization:
     material = new THREE.LineBasicMaterial( { color : 0xa0d0a0 } );
 
-    geometry = new THREE.BufferGeometry();
+    geometry = new THREE.Geometry();
 )code";
         std::list<double> vertex_ts;
-        value.linearize_ts(std::back_inserter(vertex_ts), 1);
+        value.linearize_ts(std::back_inserter(vertex_ts), true, 1);
         for (const auto t : vertex_ts)
         {
             cpp_cad::Point_3 point = value.evaluate(t);

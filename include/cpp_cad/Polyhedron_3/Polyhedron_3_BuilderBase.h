@@ -19,13 +19,13 @@ protected:
 public:
     inline Polyhedron_3_BuilderBase(
         CGAL::Polyhedron_3<Kernel> &polyhedron, HDS& hds)
-    : OPERATION_LOG_CODE(
+    : CGAL::Modifier_base<HDS>(),
+        OPERATION_LOG_CODE(
             vertex_count(0),
             face_count(0),
-      )
+        )
         polyhedron(polyhedron),
-        builder(hds, true),
-        CGAL::Modifier_base<HDS>()
+        builder(hds, true)
     {}
 
     // Required when deriving from CGAL::Modifier_base<HDS> to make this class

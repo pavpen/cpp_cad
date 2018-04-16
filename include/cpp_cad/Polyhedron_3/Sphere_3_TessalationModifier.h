@@ -18,10 +18,10 @@ private:
 
 public:
     inline Sphere_3_TessalationModifier(CGAL::Polyhedron_3<Kernel> &polyhedron, Kernel::FT circumsphere_r = 1, int linear_subdivisions = 2)
-    : circumsphere_r(circumsphere_r),
+    : CGAL::Modifier_base<HDS>(),
+        circumsphere_r(circumsphere_r),
         linear_subdivisions(linear_subdivisions),
-        polyhedron(polyhedron),
-        CGAL::Modifier_base<HDS>()
+        polyhedron(polyhedron)
     {}
 
     void operator()(HDS& hds)

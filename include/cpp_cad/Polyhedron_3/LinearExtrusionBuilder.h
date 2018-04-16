@@ -33,9 +33,9 @@ public:
         CGAL::Polyhedron_3<Kernel> &polyhedron, HDS& hds,
         const Polygon_2 &polygon,
         Kernel::FT height = 1)
-    : polygon(polygon),
+    : Polyhedron_3_BuilderBase<HDS>(polyhedron, hds),
         height(height),
-        Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
+        polygon(polygon)
     {}
 
     void run()

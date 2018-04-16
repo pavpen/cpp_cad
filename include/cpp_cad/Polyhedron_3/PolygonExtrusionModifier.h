@@ -22,11 +22,11 @@ public:
         CGAL::Polyhedron_3<Kernel> &polyhedron,
         PolygonInputIterator &track_start,
         const PolygonInputIterator &track_end, bool closed = false)
-    : track_start(track_start),
-        track_end(track_end),
+    : CGAL::Modifier_base<HDS>(),
         closed(closed),
-        polyhedron(polyhedron),
-        CGAL::Modifier_base<HDS>()
+        track_start(track_start),
+        track_end(track_end),
+        polyhedron(polyhedron)
     {}
 
     void operator()(HDS& hds)

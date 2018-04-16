@@ -21,10 +21,10 @@ public:
     inline LinearExtrusionModifier(
         CGAL::Polyhedron_3<Kernel> &polyhedron,
         const Polygon_2 &polygon, Kernel::FT height = 1)
-    : polygon(polygon),
+    : CGAL::Modifier_base<HDS>(),
         height(height),
-        polyhedron(polyhedron),
-        CGAL::Modifier_base<HDS>()
+        polygon(polygon),
+        polyhedron(polyhedron)
     {}
 
     void operator()(HDS& hds)

@@ -31,10 +31,10 @@ public:
         Kernel::FT x_length = 1,
         Kernel::FT y_length = 1,
         Kernel::FT z_length = 1)
-    : x_length(x_length),
+    : Polyhedron_3_BuilderBase<HDS>(polyhedron, hds),
+        x_length(x_length),
         y_length(y_length),
-        z_length(z_length),
-        Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
+        z_length(z_length)
     {}
 
     void run()

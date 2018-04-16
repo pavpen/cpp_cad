@@ -52,11 +52,11 @@ public:
         Kernel::FT top_r = 1,
         Kernel::FT height = 1,
         int linear_subdivisions = 2)
-    : base_r(base_r),
+    : Polyhedron_3_BuilderBase<HDS>(polyhedron, hds),
+        base_r(base_r),
         top_r(top_r),
         height(height),
-        linear_subdivisions(linear_subdivisions),
-        Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
+        linear_subdivisions(linear_subdivisions)
     {}
 
     void run()

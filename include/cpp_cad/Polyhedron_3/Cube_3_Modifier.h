@@ -21,11 +21,11 @@ public:
     inline Cube_3_Modifier(
         CGAL::Polyhedron_3<Kernel> &polyhedron,
         Kernel::FT x_length = 1, Kernel::FT y_length = 1, Kernel::FT z_length = 1)
-    : x_length(x_length),
+    : CGAL::Modifier_base<HDS>(),
+        x_length(x_length),
         y_length(y_length),
         z_length(z_length),
-        polyhedron(polyhedron),
-        CGAL::Modifier_base<HDS>()
+        polyhedron(polyhedron)
     {}
 
     void operator()(HDS& hds)

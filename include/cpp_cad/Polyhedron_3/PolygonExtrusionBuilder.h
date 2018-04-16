@@ -44,10 +44,10 @@ public:
         PolygonInputIterator &track_start,
         const PolygonInputIterator &track_end,
         bool closed = false)
-    : track_start(track_start),
-        track_end(track_end),
+    : Polyhedron_3_BuilderBase<HDS>(polyhedron, hds),
         closed(closed),
-        Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
+        track_start(track_start),
+        track_end(track_end)
     {}
 
     void run()

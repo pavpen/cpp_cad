@@ -38,8 +38,8 @@ class CubicBezierSegmentCuspCalculator
 
     CubicBezierSegmentCuspCalculator(
         const BezierSegment &segment, double eps = 1e-15)
-    : BasisMatrixCalculator(segment, eps),
-        CalculatorBase(segment, eps)
+    : CalculatorBase(segment, eps),
+        BasisMatrixCalculator(segment, eps)
     {}
 
     // Returns times of cusps in the [0; 1] range.

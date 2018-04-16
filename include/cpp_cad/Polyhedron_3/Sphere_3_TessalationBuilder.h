@@ -50,9 +50,9 @@ private:
 
 public:
     inline Sphere_3_TessalationBuilder(CGAL::Polyhedron_3<Kernel> &polyhedron, HDS& hds, Kernel::FT circumsphere_r = 1, int linear_subdivisions = 2)
-    : circumsphere_r(CGAL::to_double(circumsphere_r)),
-        linear_subdivisions(linear_subdivisions),
-        Polyhedron_3_BuilderBase<HDS>(polyhedron, hds)
+    : Polyhedron_3_BuilderBase<HDS>(polyhedron, hds),
+        circumsphere_r(CGAL::to_double(circumsphere_r)),
+        linear_subdivisions(linear_subdivisions)
     {}
 
     void run()

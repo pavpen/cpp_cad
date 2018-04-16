@@ -11,6 +11,8 @@
 #include "CubicBezierSegmentInflectionCalculator.h"
 #include "CubicBezierSegmentQrsBasisCalculator.h"
 
+#include <operation_log.h>
+
 
 namespace cpp_cad
 {
@@ -95,11 +97,15 @@ class CubicBezierSegmentLinearizer
         max_lateral_distance(max_lateral_distance)
     {}
 
-    // Returns the values of the `t` parameter for the points on the curve
-    // that can be connected by line segments.
+    // Writes the values of the `t` parameter in [0; 1) for the points on the
+    // curve that can be connected by line segments to `output_iter`.
+    //     The last point at t = 1 is not returned, but the first point at
+    // t = 0 is.  This is suitable for a spline of multiple curve segments.
     template <class OutputIterator>
     OutputIterator &linearize_ts(OutputIterator &output_iter)
     {
+        OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
+
         calculate_t_basis_matrix();
         std::tie(t_cusp1, t_cusp2) = this->calculate_cusp_ts();
         std::tie(t_inflect1, t_inflect2) = calculate_inflection_ts();
@@ -107,12 +113,17 @@ class CubicBezierSegmentLinearizer
         calculate_t_f();
         calculate_inflect_line_segments();
 
+        OPERATION_LOG_DUMP_VARS(t_cusp1, t_cusp2, t_inflect1, t_inflect2, t_f,
+            t_inflect1_start, t_inflect1_end, t_inflect2_start, t_inflect2_end);
+
         // Split the curve at cusp points, use line segments around inflection
         // points, and subdivide the rest using parabolic error approximation.
         if (std::isnan(t_cusp1) || t_cusp1 == INFINITY)
         {
             // This curve segment has no cusps, or is a one-point segment
             // where every point is a cusp.
+            OPERATION_LOG_MESSAGE("Returning a cusp-free linearization.");
+
             return linearize_cusp_free_range(output_iter, 0, 1);
         }
 
@@ -145,14 +156,24 @@ class CubicBezierSegmentLinearizer
 
     private:
 
-    // Requires inflection line segments, `q`-`r`-`s` basis, and `t_f` to have
-    // been calculated.  Only works in the [0; 1] range.
+    // Writes the values of `t` for the points on the curve that can be
+    // connected with straight line segments.
+    //     Requires inflection line segments, `q`-`r`-`s` basis, and `t_f` to
+    // have been calculated.
+    //     Works correctly only in the [0; 1) range.
+    //     Does not return the `t = t_end` value, but does return
+    // `t = t_start`.
     template <class OutputIterator>
     inline OutputIterator &linearize_cusp_free_range(
         OutputIterator &output_iter, double t_start, double t_end)
     {
+        OPERATION_LOG_ENTER_FUNCTION(t_start, t_end);
+
         // We have to perform parabolic linerization only on ranges that don't
         // intersect inflection point line segment ranges.
+
+        OPERATION_LOG_MESSAGE("Linearizing to inflection 1.");
+
         linearize_cusp_free_range_to_inflection(
             output_iter, t_start, t_end, t_inflect1_start, t_inflect1_end);
 
@@ -160,6 +181,8 @@ class CubicBezierSegmentLinearizer
         {
             return output_iter;
         }
+
+        OPERATION_LOG_MESSAGE("Linearizing between inflection 1 and 2.");
 
         linearize_cusp_free_range_to_inflection(
             output_iter, t_start, t_end, t_inflect2_start, t_inflect2_end);
@@ -169,6 +192,8 @@ class CubicBezierSegmentLinearizer
             return output_iter;
         }
 
+        OPERATION_LOG_MESSAGE("Linearizing from inflection 2.");
+
         return parabolic_linearize_range(output_iter, t_start, t_end);
     }
 
@@ -177,8 +202,12 @@ class CubicBezierSegmentLinearizer
         OutputIterator &output_iter,
         double &t_start, double &t_end, double t_inflect_start, double t_inflect_end)
     {
+        OPERATION_LOG_ENTER_FUNCTION(t_start, t_end, t_inflect_start, t_inflect_end);
+
         if (std::isnan(t_inflect_start) || t_end <= t_inflect_start + eps)
         {
+            OPERATION_LOG_MESSAGE("No inflection specified, returning linearization range unchanged.");
+
             return output_iter;
         }
 
@@ -188,12 +217,22 @@ class CubicBezierSegmentLinearizer
             if (t_start + eps < t_inflect_start)
             {
                 // Linearize to inflection range start:
+                OPERATION_LOG_MESSAGE("Linearizing to inflection segment start.");
+
                 output_iter = parabolic_linearize_range(
                     output_iter, t_start, t_inflect_start);
+
+                OPERATION_LOG_MESSAGE_STREAM(<< "Adding t =" << t_inflect_start << ".");
+
+                (*output_iter) = t_inflect_start;
+                ++output_iter;
             }
             if (t_end <= t_inflect_end + eps)
             {
                 // t_end is in the inflection range:
+                OPERATION_LOG_MESSAGE("Adding line segment to linearization segment end, and returning.");
+                OPERATION_LOG_MESSAGE_STREAM(<< "Adding t =" << t_end << ".");
+
                 (*output_iter) = t_end;
                 ++output_iter;
 
@@ -202,11 +241,13 @@ class CubicBezierSegmentLinearizer
                 return output_iter;
             }
             // Line segment to the end of inflection range 1:
-            (*output_iter) = t_inflect_end;
-            ++output_iter;
+            OPERATION_LOG_MESSAGE("Reached inflection segment end.");
+
             // Continue from t_inflect_end:
             t_start = t_inflect_end;
         }
+
+        return output_iter;
     }
 
     // Adds line segments to `output_iter` for the curve segment from
@@ -214,12 +255,22 @@ class CubicBezierSegmentLinearizer
     //     Uses parabolic estimation of the error, so the curve segment must
     // have no cusps or inflection points.
     //     Requires the `q`-`r`-`s` basis to have been calculated.
+    //     Adds the point `t = t_start`, but not `t = t_end`.
     template <class OutputIterator>
     inline OutputIterator &parabolic_linearize_range(
         OutputIterator &output_iter, double t_start, double t_end)
     {
+        OPERATION_LOG_ENTER_FUNCTION(t_start, t_end);
+
+        OPERATION_LOG_MESSAGE_STREAM(<< "Adding t =" << t_start << ".");
+
+        (*output_iter) = t_start;
+        ++output_iter;
+
         if (t_end - t_start < eps)
         {
+            OPERATION_LOG_MESSAGE("The `t` range is too small, returning only the starting point.");
+
             return output_iter;
         }
 
@@ -230,11 +281,13 @@ class CubicBezierSegmentLinearizer
             t = parabolic_split_t();
             if (t + eps >= t_end)
             {
-                (*output_iter) = t_end;
-                ++output_iter;
+                OPERATION_LOG_MESSAGE("Reached the end.  Returning.");
 
                 return output_iter;
             }
+
+            OPERATION_LOG_MESSAGE_STREAM(<< "Adding t =" << t << ".");
+
             (*output_iter) = t;
             ++output_iter;
             t_start = t;
@@ -252,11 +305,13 @@ class CubicBezierSegmentLinearizer
 
             if (t + eps >= t_end)
             {
-                (*output_iter) = t_end;
-                ++output_iter;
+                OPERATION_LOG_MESSAGE("Reached the end.  Returning.");
 
                 return output_iter;
             }
+
+            OPERATION_LOG_MESSAGE_STREAM(<< "Adding t =" << t << ".");
+
             (*output_iter) = t;
             ++output_iter;
             t_start = t;
@@ -270,12 +325,18 @@ class CubicBezierSegmentLinearizer
     // Requires the `q`, `r`, `s` basis to have been calculated.
     inline double parabolic_split_t()
     {
+        OPERATION_LOG_ENTER_NO_ARG_FUNCTION();
+
         std::tuple<double, double, double>
             p2 = vector_3::point_to_tuple(segment.p2());
         double r2 = vector_3::dot_3(p2, std::make_tuple(r_x, r_y, r_z));
         double s2 = vector_3::dot_3(p2, std::make_tuple(s_x, s_y, s_z));
 
-        return 2 * sqrt( max_lateral_distance / 3 * sqrt(r2 * r2 + s2 * s2) );
+        double res = 2 * sqrt( max_lateral_distance / ( 3 * sqrt(r2 * r2 + s2 * s2) ) );
+
+        OPERATION_LOG_DUMP_VARS(max_lateral_distance, res);
+
+        return res;
     }
 
     inline void calculate_inflect_line_segments()

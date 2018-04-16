@@ -44,6 +44,6 @@ endif()
 #add_test(NAME example_test COMMAND example)
 
 # Enable operation logging for unit tests:
-SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DOPERATION_LOG_ENABLE" )
+SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -DOPERATION_LOG_ENABLE" )
 
 add_subdirectory(cpp_cad)

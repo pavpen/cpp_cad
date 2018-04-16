@@ -24,12 +24,12 @@ public:
         CGAL::Polyhedron_3<Kernel> &polyhedron,
         Kernel::FT base_r = 1, Kernel::FT top_r = 1, Kernel::FT height = 1,
         int linear_subdivisions = 2)
-    : base_r(base_r),
+    : CGAL::Modifier_base<HDS>(),
+        base_r(base_r),
         top_r(top_r),
         height(height),
         linear_subdivisions(linear_subdivisions),
-        polyhedron(polyhedron),
-        CGAL::Modifier_base<HDS>()
+        polyhedron(polyhedron)
     {}
 
     void operator()(HDS& hds)
